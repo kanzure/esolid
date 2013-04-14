@@ -1,0 +1,10 @@
+http://gamma.cs.unc.edu/ESOLID/
+http://research.cs.tamu.edu/keyser/geom/esolid/index.htm
+http://www.cs.unc.edu/~walk/software/glvu/dist/glvu_all_040421.zip
+http://research.cs.tamu.edu/keyser/geom/esolid/releases/glvu/simple_viewer.tar.gz
+http://research.cs.tamu.edu/keyser/geom/esolid/releases/version_0.3/ESOLID-0.3.tar.gz
+http://research.cs.tamu.edu/keyser/geom/esolid/releases/version_0.2/ESOLID-0.2.tar.gz
+http://research.cs.tamu.edu/keyser/geom/esolid/releases/version_0.1/ESOLID-0.1.2.tar.gz
+http://research.cs.tamu.edu/keyser/geom/esolid/releases/version_0.1/ESOLID-0.1.1.tar.gz
+http://research.cs.tamu.edu/keyser/geom/esolid/releases/version_0.1/README.htm
+http://web.archive.org/web/20040821025515/http://research.cs.tamu.edu/keyser/geom/esolid/releases/version_0.1/ESOLID-0.1.1.tar.gz
