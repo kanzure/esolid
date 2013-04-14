@@ -1,0 +1,138 @@
+//  file:    README
+//  update:  04/15/04
+
+ESOLID Version 0.1
+
+URL:    http://research.cs.tamu.edu/keyser/geom/esolid
+
+1) Files
+
+README           This file
+
+Makefile         Makefile
+
+include/         Header files
+src/             Source codes for the library
+main/            Smaple main files
+desolid/         Sample input files
+
+2) Installation
+
+2-1) Platforms
+
+ESOLID Version xxx has been tested on
+
+  Debian GNU/Linux 3.0 (woody)   and  g++ 2.95.4 or g++ 3.3.3
+  Fedora Linux     1.0 (yarrow)  and  g++ 3.3.2
+
+on Intel x86 CPU's.
+
+2-2) Prerequisite Libraries
+
+To build and run ESOLID Version xxx, the GNU MP (gmp) and LAPACK
+(clapack) are required.
+
+2-2-1) The GNU MP (gmp)
+
+The GNU MP (gmp) 4.0 or later must be pre-installed on your
+machine. For more information, visit the GNU MP homepage:
+
+     http://www.swox.com/gmp/
+
+The compiled binaries for Debian are are available at
+
+     http://packages.debian.org/stable/libs/libgmp3.html
+
+and, for Red Hat at
+
+     http://demo.interchange.redhat.com/swr/i386/gmp-devel-4.1.2-2.i386.html
+
+We assume the header file
+
+     gmp.h
+
+is located at
+
+     /usr/include
+
+and the archive
+
+     libgmp.a or libgmp.so
+
+at
+
+     /usr/lib.
+
+If the name and/or location of any of those is different, edit Makefile and
+correct it.
+
+2-2-2) LAPACK (CLAPACK)
+
+To build and run ESOLID Version 0.1, CLAPCK must be pre-installed
+on your machine.
+
+LAPCK is originally written in FORTRAN. CLAPACK is a version of
+LAPACK written in C. For more information, visit CLAPACK homepage:
+
+     http://www.netlib.org/clapack/index.html
+
+2-2-2-1) BLAS is required to run CLAPACK. If BLAS is not present
+         on your machine, then build and use "cblas", that is contained
+         in the source code of "clapack". Note that the performance
+         of CLAPACK, and ESOLID, as well, largely depends on the performance
+         of the BLAS library.
+
+2-2-2-2) Please, download the source code of "clapack" from
+
+	      http://www.netlib.org/clapack/index.html
+
+         and build it.
+
+We assume the archives
+
+	     libclapack.a
+	     libF77.a
+
+are located at /usr/local/lib. If the name and/or location of any of
+those is different, edit Makefile and correct it.
+
+2-3) Installation
+
+2-3-1) De-archive ESOLID.tar.gz by
+
+            gzip -cd ESOLID.tar.gz | tar -xf -
+
+       and you will have the directory ESOLID. Move there by
+
+            cd ESOLID.
+
+2-3-2) Look at
+
+            Makefile
+            Makefile.flags
+            Makefile.system
+
+       and modify them if necessarily. Also, look at
+
+            include/config.h
+            src/config.cc
+
+       and modify them if necessarily.
+
+2-3-2) To make binary for the complete ESOLID binary, "esolid", simply type
+
+            make
+
+       or
+
+            make esolid.
+
+       To male binary for the MAPC binary, "mapc", type
+
+            make mapc.
+
+3) Contact:
+
+     Prof. John Keyser: keyser@cs.tamu.edu
+     Koji Ouchi       : kouchi@cs.tamu.edu
+

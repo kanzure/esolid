@@ -1,0 +1,107 @@
+//  file:    README.main
+//  update:  09/15/03
+
+ESOLID Version xxx
+
+URL:    http://research.cs.tamu.edu/keyser/geom/
+
+1) Files
+
+README			This file
+
+mapc_poly_main.cc	A sample file to use MAPC
+mapc_sturm_main.cc	A sample file to use MAPC
+mapc_pt1_main.cc	A sample file to use MAPC
+mapc_main.cc		A sample file to use MAPC
+
+esolid_main.cc		A sample file to use ESOLID
+
+In the rest of this file, ${ESOLID_dir} refers to the installation
+directory, the parent directory where you are now.
+
+2) MAPC
+
+MAPC is a library for efficient exact manipulation of algebraic points
+and curves.
+
+To build the archive of the object files, go to ${ESOLID_dir} and type
+
+  make libmapc
+
+2-1) mapc_poly_main.cc
+
+This file contains the source codes to build the executable "mapc_poly".
+To build the executable "esolid", go to ${ESOLID_dir} and type
+
+  make mapc_poly
+
+This file contains several examples to use MAPC to perform arithmetic
+operations over the ring of polynomials with rational coefficients.
+
+2-2) mapc_sturm_main.cc
+
+This file contains the source codes to build the executable "mapc_sturm".
+To build the executable "esolid", go to ${ESOLID_dir} and type
+
+  make mapc_sturm
+
+This file contains several examples to use MAPC to compute the roots
+of a given univariate polynomial with rational coefficients by Sturm
+sequence method.
+
+2-3) mapc_pt1_main.cc
+
+This file contains the source codes to build the executable "mapc_pt1".
+To build the executable "esolid", go to ${ESOLID_dir} and type
+
+  make mapc_pt1
+
+This file contains several examples to use MAPC to perform arithmetic
+operations over 1-dimensional algebraic numbers.
+
+2-4) mapc_main.cc
+
+This file contains the source codes to build the executable "mapc".
+To build the executable "esolid", go to ${ESOLID_dir} and type
+
+  make mapc
+
+This file contains several examples to use MAPC.
+
+3) ESOLID
+
+ESOLID is a system for performing exact boundary evaluation of
+low-degree curves solids.
+
+3-1) esolid_main.cc
+
+This file contains the source codes to build the executable "esolid".
+To build the executable "esolid", go to ${ESOLID_dir} and type
+
+  make esolid
+
+or simply
+
+  make
+
+The usage is "esolid" is as follows:
+
+  usage: esolid [operation] infile1 [infile2] [outfile]
+  operations:
+    -M  perform a multilevel operation rooted at the directory infile1
+    -U  perform a union between infile1 and infile2, output to outfile.
+    -I  perfom an intersection between infile1 and infile2, output to outfile.
+    -D  perform a difference of infile1 minus infile2, output to outfile.
+    -O  output the solid given in infile1 to outfile (do not specify infile2).
+
+  example:
+
+    ${ESOLID_dir}/esolid -U ${ESOLID_dir}/desolid/boxinp1
+                            ${ESOLID_dir}/desolid/boxinp2
+                            ${ESOLID_dir}/bez/box1Ubox2.bez
+
+4) Contact:
+
+     Prof. John Keyser: keyser@cs.tamu.edu
+     Koji Ouchi       : kouchi@cs.tamu.edu
+
