@@ -3,7 +3,7 @@
 K_BOXCO2 :: K_BOXCO2()
 {
   unsigned long i;
-  
+
   for (i = 0; i < 2; i++)
   {
     low[i]       = 0;
@@ -32,7 +32,7 @@ K_BOXCO2 :: K_BOXCO2(const bigrational* const l, const bigrational* const h,
                      const int* const l_open, const int* const h_open)
 {
   unsigned long i;
-  
+
   for (i = 0; i < 2; i++)
   {
     low[i]       = l[i];
@@ -45,7 +45,7 @@ K_BOXCO2 :: K_BOXCO2(const bigrational* const l, const bigrational* const h,
 K_BOXCO2 :: K_BOXCO2(const K_BOXCO2& b)
 {
   unsigned long i;
-  
+
   for (i = 0; i < 2; i++)
   {
     low[i]       = b.low[i];
@@ -60,7 +60,7 @@ K_BOXCO2& K_BOXCO2 :: operator =(const K_BOXCO2& b)
   if (this != &b)
   {
     unsigned long i;
-    
+
     for (i = 0; i < 2; i++)
     {
       low[i]       = b.low[i];
@@ -69,7 +69,7 @@ K_BOXCO2& K_BOXCO2 :: operator =(const K_BOXCO2& b)
       high_open[i] = b.high_open[i];
     }
   }
-  
+
   return *this;
 }
 
@@ -82,28 +82,28 @@ ostream& K_BOXCO2 :: output(ostream& o) const
     o << "( ";
   else  //  if (low_open[0] == 0)
     o << "[ ";
-  
+
   o << low[0] << ", " << high[0];
-  
+
   if (high_open[0])
     o << " )";
   else  //  if (high_open[0] == 0)
     o << " ]";
-  
+
   o << " x ";
-  
+
   if (low_open[1])
     o << "( ";
   else  //  if (low_open[1] == 0)
     o << "[ ";
-  
+
   o << low[1] << ", " << high[1];
-  
+
   if (high_open[1])
     o << " )";
   else  //  if (high_open[1] == 0)
     o << " ]";
-  
+
   return o;
 }
 
@@ -156,7 +156,7 @@ K_BOXCO2 K_BOXCO2 :: merge(const K_BOXCO2& b) const
 {
   unsigned long i;
   K_BOXCO2      c;
-  
+
   for (i = 0; i < 2; i++)
   {
     if (low[i] < b.low[i])
@@ -174,7 +174,7 @@ K_BOXCO2 K_BOXCO2 :: merge(const K_BOXCO2& b) const
       c.low[i]      = low[i];
       c.low_open[i] = low_open[i] * b.low_open[i];
     }
-    
+
     if (high[i] > b.high[i])
     {
       c.high[i]      = high[i];
@@ -191,7 +191,7 @@ K_BOXCO2 K_BOXCO2 :: merge(const K_BOXCO2& b) const
       c.high_open[i] = high_open[i] * b.high_open[i];
     }
   }
-  
+
   return c;
 }
 
@@ -199,7 +199,7 @@ int K_BOXCO2 :: overlap(const K_BOXCO2& b) const
 {
   unsigned long i;
   int           o;
-  
+
   for (o = 1, i = 0; o && i < 2; i++)
     if (low[i] > b.high[i]
         ||
@@ -209,7 +209,7 @@ int K_BOXCO2 :: overlap(const K_BOXCO2& b) const
         ||
         high[i] == b.low[i] && (high_open[i] || b.low_open[i]))
       o = 0;
-  
+
   return o;
 }
 
@@ -217,7 +217,7 @@ int K_BOXCO2 :: contains(const K_BOXCO2& b) const
 {
   unsigned long i;
   int           c;
-  
+
   for (i = 0, c = 1; c && i < 2; i++)
     if (low[i] > b.low[i]
         ||
@@ -227,7 +227,7 @@ int K_BOXCO2 :: contains(const K_BOXCO2& b) const
         ||
         high[i] == b.high[i] && high_open[i] && !b.high_open[i])
       c = 0;
-  
+
   return c;
 }
 

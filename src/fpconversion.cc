@@ -68,40 +68,40 @@ int double2bigrational_interval(const double x,
                                 bigrational& l, bigrational& r)
 {
   bigint num_l, den_l, num_r, den_r;  //  numerators & denominators of l & r
-  
+
   unsigned int num_bits;  //  number of bits of [l, r]
-  
+
   unsigned int x_h, x_l;  //  upper && lower words of x
-  
+
   unsigned int s, e, f_h, f_l;  //  contents of the IEEE double fields
                                 //    sign, exponent,
                                 //    upper && lower words of mantissa
                                 //  note that f takes up 53 bits
                                 //  and must be split
   int e_signed;  //  the exponent, interpreted
-  
+
   int          num_use_bits;          //  number of bits of `f' we' ll use
   unsigned int num_use_bits_h;        //  portions of `num_use_bits'
   unsigned int num_use_bits_l;        //    that applies to f_h & f_l
   unsigned int num_use_bits_further;  //  portion of `num_use_bits'
                                       //    beyond the known significand
                                       //  -- >0 is returned if this is positive
-  
+
   //  Ensure that the result will have at least one bit of accuracy.
-  
+
   if ((num_bits = n) < 1)
     num_bits = 1;
-  
+
   x_h = HI_HALF(x);
   x_l = LO_HALF(x);
-  
+
   //  Parse x
-  
+
   s   = get_bits(x_h, 31, 1);
   e   = get_bits(x_h, 30, 11);
   f_h = get_bits(x_h, 19, 20);
   f_l = x_l;
-  
+
   if (e == 2047)  //  x is NaN, Inf, ...
     return - 1;
   else
@@ -115,19 +115,19 @@ int double2bigrational_interval(const double x,
       }
       else
         num_use_bits_further = 0;
-      
+
       den_l = 1;
       den_l <<= num_bits + 1;
       den_r = den_l;
       num_l = - 1;
       num_r = 1;
-      
+
       s = 0;
     }
     else  //  x != 0.0
     {
       //  Interpret e.
-      
+
       if (e)  //  x is normalized
       {
         f_h      |= (unsigned int)1 << 20;  //  Pad the hidden MSB of f.
@@ -135,19 +135,19 @@ int double2bigrational_interval(const double x,
       }
       else  //  x is "subnormal"
         e_signed = - 1022;
-      
+
       //  Compute l & r.
-      
+
       den_l = 1;
       den_l <<= num_bits;
       den_r = 1;
       den_r <<= num_bits;
-      
+
       //  We'll use num_use_bits leading bits from the significand
       //  & pad num_use_bits_further many 0's to right.
-      
+
       num_use_bits = num_bits + e_signed + 1;
-      
+
       if (num_use_bits <= 53)
         num_use_bits_further = 0;
       else
@@ -155,7 +155,7 @@ int double2bigrational_interval(const double x,
         num_use_bits_further = num_use_bits - 53;
         num_use_bits         = 53;
       }
-      
+
       if (num_use_bits < 1)  //  No significant bits are needed.
       {
         num_l = 0;
@@ -165,26 +165,26 @@ int double2bigrational_interval(const double x,
       {
         num_use_bits_h = num_use_bits <= 21 ? num_use_bits : 21;
         num_use_bits_l = num_use_bits <= 21 ? 0 : num_use_bits - 21;
-        
+
         num_l = get_bits(f_h, 20, num_use_bits_h);
         num_l <<= num_use_bits_l;
-        
+
         if (num_use_bits_l != 32)
           num_l += get_bits(f_l, 31, num_use_bits_l);
         else  //  f_l must be getting cast to a signed int. Fix it.
           num_l += f_l;
-        
+
         num_r = num_l + 1;
         num_l <<= num_use_bits_further;
         num_r <<= num_use_bits_further;
       }
     }
-    
+
     //  Take care of signs.
-    
+
     bigrational l0(num_l, den_l);
     bigrational r0(num_r, den_r);
-    
+
     if (!s)  //  s is 0 iff x >= 0.0
     {
       l = l0;
@@ -195,7 +195,7 @@ int double2bigrational_interval(const double x,
       l = - r0;
       r = - l0;
     }
-    
+
     return num_use_bits_further ? 1 : 0;
   }
 }
@@ -203,19 +203,19 @@ int double2bigrational_interval(const double x,
 bigrational as_bigrational(const float f)
 {
   bigrational x, l, h;
-  
+
   if (f == 0.0)
     x = 0;
   else
   {
     double2bigrational_interval(f, 23, l, h);
-    
+
     if (f < 0.0)
       x = h;
     else  //  if (f > 0.0)
       x = l;
   }
-  
+
   return x;
 }
 

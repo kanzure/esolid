@@ -48,7 +48,7 @@ bigint :: bigint(const bigint& I)
 bigint& bigint :: operator =(const bigint& I)
 {
   mpz_set(rep, I.rep);
-  
+
   return *this;
 }
 
@@ -60,9 +60,9 @@ bigint :: ~bigint()
 //bigint Rand()
 //{
 //  bigint x;
-//  
+//
 //  mpz_urandomb(x.rep, rand_state, rand_length);
-//  
+//
 //  return x;
 //}
 
@@ -104,9 +104,9 @@ double frexp(const bigint& x, long* y)
 long lb4lgAbs(const bigint& x)
 {
   long y;
-  
+
   x.abs().frexp(&y);
-  
+
   return y - 1;
 }
 
@@ -114,9 +114,9 @@ long ub4lgAbs(const bigint& x)
 {
   double y;
   long   z;
-  
+
   y = x.abs().frexp(&z);
-  
+
   if (y == .5)
     return z - 1;
   else
@@ -126,9 +126,9 @@ long ub4lgAbs(const bigint& x)
 bigint bigint :: add(const bigint& x) const
 {
   bigint y;
-  
+
   mpz_add(y.rep, rep, x.rep);
-  
+
   return y;
 }
 
@@ -140,9 +140,9 @@ bigint operator +(const bigint& x, const bigint& y)
 bigint bigint :: sub(const bigint& x) const
 {
   bigint y;
-  
+
   mpz_sub(y.rep, rep, x.rep);
-  
+
   return y;
 }
 
@@ -154,9 +154,9 @@ bigint operator -(const bigint& x, const bigint& y)
 bigint bigint :: mul(const bigint& x) const
 {
   bigint y;
-  
+
   mpz_mul(y.rep, rep, x.rep);
-  
+
   return y;
 }
 
@@ -168,9 +168,9 @@ bigint operator *(const bigint& x, const bigint& y)
 bigint bigint :: div(const bigint& x) const
 {
   bigint y;
-  
+
   mpz_tdiv_q(y.rep, rep, x.rep);
-  
+
   return y;
 }
 
@@ -187,16 +187,16 @@ void bigint :: inc()
 bigint& bigint :: operator ++()  //  prefix
 {
   inc();
-  
+
   return *this;
 }
 
 bigint bigint :: operator ++(int)  //  postfix
 {
   bigint x(*this);
-  
+
   inc();
-  
+
   return x;
 }
 
@@ -208,25 +208,25 @@ void bigint :: dec()
 bigint& bigint :: operator --()  //  prefix
 {
   dec();
-  
+
   return *this;
 }
 
 bigint bigint :: operator --(int)  //  postfix
 {
   bigint x(*this);
-  
+
   dec();
-  
+
   return x;
 }
 
 bigint bigint :: lshift(const unsigned long x) const
 {
   bigint y;
-  
+
   mpz_mul_2exp(y.rep, rep, x);
-  
+
   return y;
 }
 
@@ -238,9 +238,9 @@ bigint operator <<(const bigint& x, const unsigned long y)
 bigint bigint :: rshift(const unsigned long x) const
 {
   bigint y;
-  
+
   mpz_fdiv_q_2exp(y.rep, rep, x);
-  
+
   return y;
 }
 
@@ -252,9 +252,9 @@ bigint operator >>(const bigint& x, const unsigned long y)
 bigint bigint :: neg() const
 {
   bigint y;
-  
+
   mpz_neg(y.rep, rep);
-  
+
   return y;
 }
 
@@ -266,9 +266,9 @@ bigint operator -(const bigint& x)
 bigint bigint :: abs() const
 {
   bigint y;
-  
+
   mpz_abs(y.rep, rep);
-  
+
   return y;
 }
 
@@ -280,9 +280,9 @@ bigint abs(const bigint& x)
 bigint bigint :: root(const unsigned long x) const
 {
   bigint y;
-  
+
   mpz_root(y.rep, rep, x);
-  
+
   return y;
 }
 
@@ -294,9 +294,9 @@ bigint root(const bigint& x, const unsigned long y)
 bigint bigint :: sqrt() const
 {
   bigint x;
-  
+
   mpz_sqrt(x.rep, rep);
-  
+
   return x;
 }
 
@@ -368,9 +368,9 @@ int operator !(const bigint& x)
 bigint bigint :: AND(const bigint& x) const
 {
   bigint y;
-  
+
   mpz_and(y.rep, rep, x.rep);
-  
+
   return y;
 }
 
@@ -382,9 +382,9 @@ bigint operator &(const bigint& x, const bigint& y)
 bigint bigint :: IOR(const bigint& x) const
 {
   bigint y;
-  
+
   mpz_ior(y.rep, rep, x.rep);
-  
+
   return y;
 }
 
@@ -396,9 +396,9 @@ bigint operator |(const bigint& x, const bigint& y)
 bigint bigint :: XOR(const bigint& x) const
 {
   bigint y;
-  
+
   mpz_xor(y.rep, rep, x.rep);
-  
+
   return y;
 }
 
@@ -410,9 +410,9 @@ bigint operator ^(const bigint& x, const bigint& y)
 bigint bigint :: gcd(const bigint& x) const
 {
   bigint y;
-  
+
   mpz_gcd(y.rep, rep, x.rep);
-  
+
   return y;
 }
 
@@ -424,9 +424,9 @@ bigint gcd(const bigint& x, const bigint& y)
 bigint bigint :: lcm(const bigint& x) const
 {
   bigint y;
-  
+
   mpz_lcm(y.rep, rep, x.rep);
-  
+
   return y;
 }
 
@@ -438,63 +438,63 @@ bigint lcm(const bigint& x, const bigint& y)
 bigint& bigint :: operator +=(const bigint& x)
 {
   mpz_add(rep, rep, x.rep);
-  
+
   return *this;
 }
 
 bigint& bigint :: operator -=(const bigint& x)
 {
   mpz_sub(rep, rep, x.rep);
-  
+
   return *this;
 }
 
 bigint& bigint :: operator *=(const bigint& x)
 {
   mpz_mul(rep, rep, x.rep);
-  
+
   return *this;
 }
 
 bigint& bigint :: operator /=(const bigint& x)
 {
   mpz_tdiv_q(rep, rep, x.rep);
-  
+
   return *this;
 }
 
 bigint& bigint :: operator <<=(const unsigned long x)
 {
   mpz_mul_2exp(rep, rep, x);
-  
+
   return *this;
 }
 
 bigint& bigint :: operator >>=(const unsigned long x)
 {
   mpz_div_2exp(rep, rep, x);
-  
+
   return *this;
 }
 
 bigint& bigint :: operator &=(const bigint& x)
-{ 
+{
   mpz_and(rep, rep, x.rep);
-  
+
   return *this;
 }
 
 bigint& bigint :: operator |=(const bigint& x)
 {
   mpz_ior(rep, rep, x.rep);
-  
+
   return *this;
 }
 
 bigint& bigint :: operator ^=(const bigint& x)
 {
   mpz_xor(rep, rep, x.rep);
-  
+
   return *this;
 }
 
@@ -506,26 +506,26 @@ int bigint :: bit(const unsigned long x) const
 //ostream& operator <<(ostream& o, const bigint& x)
 //{
 //  char* s = new char [256];
-//  
+//
 //  mpz_get_str(s, 10, x.rep);
 //  o << s;
-//  
+//
 //  delete [] s;
-//  
+//
 //  return o;
 //}
 
 ostream& operator <<(ostream& o, const bigint& x)
 {
   char* s;
-  
+
   if (s = mpz_get_str(NULL, 10, x.rep))
   {
     o << s;
-    
+
     delete [] s;
   }
-  
+
   return o;
 }
 
@@ -533,27 +533,27 @@ istream& operator >>(istream& i, bigint& x)
 {
   char c;
   int  s;
-  
+
   s = 1;
   x = 0;
-  
+
   i >> c;
-  
+
   if (c == '-')
   {
     s = - 1;
     i >> c;
   }
-  
+
   while (c >= '0' && c <= '9')
   {
     x = x * 10 + (long)(c - '0');
     i.get(c);
   }
-  
+
   if (s < 0)
     x = - x;
-  
+
   return i;
 }
 

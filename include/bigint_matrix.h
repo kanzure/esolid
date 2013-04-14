@@ -12,81 +12,81 @@ using namespace std;
 class bigint_matrix
 {
 friend class bigrational_matrix;
-  
+
 private:
-  
+
   unsigned long num_row;
   unsigned long num_col;
   bigint*       rep;
-  
+
   //  arithmetic
-  
+
   bigint_matrix add(const bigint_matrix&) const;
   bigint_matrix sub(const bigint_matrix&) const;
   bigint_matrix mul(const bigint_matrix&) const;
-  
+
   bigint_matrix neg() const;
-  
+
 //  bigint_matrix scalar_mul(const bigint&) const;
-  
+
   //  comparison
-  
+
   int cmp(const bigint_matrix&) const;
-  
+
   //  square matrix
-  
+
   int    is_identity() const;
   bigint det() const;
-  
+
 public:
-  
+
   //  constructor, assignment and destructor
-  
+
   bigint_matrix(const unsigned long = 1, const unsigned long = 1);
   bigint_matrix(const unsigned long, const unsigned long, const bigint*);
-  
+
   bigint_matrix(const bigint_matrix&);
   bigint_matrix& operator =(const bigint_matrix&);
-  
+
   ~bigint_matrix();
-  
+
   //  size
-  
+
   unsigned long get_num_row() const;
   unsigned long get_num_col() const;
-  
+
   //  element
-  
+
   bigint& operator ()(const unsigned long, const unsigned long) const;
-  
+
   //  arithmetic
-  
+
   friend bigint_matrix operator +(const bigint_matrix&, const bigint_matrix&);
   friend bigint_matrix operator -(const bigint_matrix&, const bigint_matrix&);
   friend bigint_matrix operator *(const bigint_matrix&, const bigint_matrix&);
-  
+
   friend bigint_matrix operator -(const bigint_matrix&);
-  
+
 //  friend bigint_matrix scalar_mul(const bigint&, const bigint_matrix&);
-  
+
   //  comparison
-  
+
   friend int operator ==(const bigint_matrix&, const bigint_matrix&);
   friend int operator !=(const bigint_matrix&, const bigint_matrix&);
-  
+
   //  arithemtic and assignment
-  
+
   bigint_matrix& operator +=(const bigint_matrix&);
   bigint_matrix& operator -=(const bigint_matrix&);
-  
+
 //  bigint_matrix& scalar_mul_assign(const bigint&);
-  
+
   //  square matrix
-  
+
   friend bigint det(const bigint_matrix&);
-  
+
   //  stream
-  
+
   friend ostream& operator <<(ostream&, const bigint_matrix&);
 };
 

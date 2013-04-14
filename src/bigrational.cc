@@ -59,7 +59,7 @@ bigrational :: bigrational(const bigrational& Q)
 bigrational& bigrational :: operator =(const bigrational& Q)
 {
   mpq_set(rep, Q.rep);
-  
+
   return *this;
 }
 
@@ -78,10 +78,10 @@ bigrational :: ~bigrational()
 unsigned long bigrational :: len() const
 {
   unsigned long l_n, l_d;
-  
+
   l_n = mpz_sizeinbase(mpq_numref(rep), 2);
   l_d = mpz_sizeinbase(mpq_denref(rep), 2);
-  
+
   return l_n + l_d;
 }
 
@@ -98,9 +98,9 @@ int bigrational :: fits_bigint() const
 bigint bigrational :: as_bigint() const
 {
   bigint x;
-  
+
   mpz_divexact(x.rep, mpq_numref(rep), mpq_denref(rep));
-  
+
   return x;
 }
 
@@ -127,9 +127,9 @@ bigint den(const bigrational& x)
 bigint bigrational :: ceil() const
 {
   bigint x;
-  
+
   mpz_cdiv_q(x.rep, mpq_numref(rep), mpq_denref(rep));
-  
+
   return x;
 }
 
@@ -141,9 +141,9 @@ bigint ceil(const bigrational& x)
 bigint bigrational :: floor() const
 {
   bigint x;
-  
+
   mpz_fdiv_q(x.rep, mpq_numref(rep), mpq_denref(rep));
-  
+
   return x;
 }
 
@@ -155,9 +155,9 @@ bigint floor(const bigrational& x)
 bigint bigrational :: trunc() const
 {
   bigint x;
-  
+
   mpz_tdiv_q(x.rep, mpq_numref(rep), mpq_denref(rep));
-  
+
   return x;
 }
 
@@ -169,10 +169,10 @@ bigint trunc(const bigrational& x)
 long bigrational :: lgAbs() const
 {
   long ld, ln;
-  
+
   num().abs().frexp(&ln);
   den().abs().frexp(&ld);
-  
+
   return ln - ld;
 }
 
@@ -189,10 +189,10 @@ long ub4lgAbs(const bigrational& x)
 bigrational bigrational :: add(const bigrational& x) const
 {
   bigrational y;
-  
+
   mpq_add(y.rep, rep, x.rep);
   mpq_canonicalize(y.rep);
-  
+
   return y;
 }
 
@@ -204,10 +204,10 @@ bigrational operator +(const bigrational& x, const bigrational& y)
 bigrational bigrational :: sub(const bigrational& x) const
 {
   bigrational y;
-  
+
   mpq_sub(y.rep, rep, x.rep);
   mpq_canonicalize(y.rep);
-  
+
   return y;
 }
 
@@ -219,10 +219,10 @@ bigrational operator -(const bigrational& x, const bigrational& y)
 bigrational bigrational :: mul(const bigrational& x) const
 {
   bigrational y;
-  
+
   mpq_mul(y.rep, rep, x.rep);
   mpq_canonicalize(y.rep);
-  
+
   return y;
 }
 
@@ -234,10 +234,10 @@ bigrational operator *(const bigrational& x, const bigrational& y)
 bigrational bigrational :: div(const bigrational& x) const
 {
   bigrational y;
-  
+
   mpq_div(y.rep, rep, x.rep);
   mpq_canonicalize(y.rep);
-  
+
   return y;
 }
 
@@ -249,9 +249,9 @@ bigrational operator /(const bigrational& x, const bigrational& y)
 bigrational bigrational :: neg() const
 {
   bigrational x;
-  
+
   mpq_neg(x.rep, rep);
-  
+
   return x;
 }
 
@@ -263,9 +263,9 @@ bigrational operator -(const bigrational& x)
 bigrational bigrational :: abs() const
 {
   bigrational x;
-  
+
   mpq_abs(x.rep, rep);
-  
+
   return x;
 }
 
@@ -277,9 +277,9 @@ bigrational abs(const bigrational& x)
 bigrational bigrational :: inv() const
 {
   bigrational x;
-  
+
   mpq_inv(x.rep, rep);
-  
+
   return x;
 }
 
@@ -357,7 +357,7 @@ bigrational& bigrational :: operator +=(const bigrational& x)
 {
   mpq_add(rep, rep, x.rep);
   mpq_canonicalize(rep);
-  
+
   return *this;
 }
 
@@ -365,7 +365,7 @@ bigrational& bigrational :: operator -=(const bigrational& x)
 {
   mpq_sub(rep, rep, x.rep);
   mpq_canonicalize(rep);
-  
+
   return *this;
 }
 
@@ -373,7 +373,7 @@ bigrational& bigrational :: operator *=(const bigrational& x)
 {
   mpq_mul(rep, rep, x.rep);
   mpq_canonicalize(rep);
-  
+
   return *this;
 }
 
@@ -381,7 +381,7 @@ bigrational& bigrational :: operator /=(const bigrational& x)
 {
   mpq_div(rep, rep, x.rep);
   mpq_canonicalize(rep);
-  
+
   return *this;
 }
 
@@ -389,36 +389,36 @@ bigrational& bigrational :: operator /=(const bigrational& x)
 //{
 //  char* s = new char [256];
 //  mpz_t n, d;
-//  
+//
 //  mpz_init_set(n, mpq_numref(x.rep));
 //  mpz_init_set(d, mpq_denref(x.rep));
-//  
+//
 //  mpz_get_str(s, 10, n);
 //  o << s;
-//  
+//
 //  if (mpz_cmp_ui(d, 1))
 //  {
 //    mpz_get_str(s, 10, d);
 //    o << "/" << s;
 //  }
-//  
+//
 //  mpz_clear(n);
 //  mpz_clear(d);
 //  delete [] s;
-//  
+//
 //  return o;
 //}
 
 ostream& operator <<(ostream& o, const bigrational& x)
 {
   char* s;
-  
+
   if (s = mpq_get_str(NULL, 10, x.rep))
   {
     o << s;
     delete [] s;
   }
-  
+
   return o;
 }
 
@@ -427,33 +427,33 @@ istream& operator >>(istream& i, bigrational& x)
   char   c;
   int    s;
   bigint n, d;
-  
+
   s = 1;
   n = d = 0;
-  
+
   i >> c;
-  
+
   if (c == '-')
   {
     s = - 1;
     i >> c;
   }
-  
+
   while (c >= '0' && c <= '9')
   {
     n = n * 10 + (long)(c - '0');
     i.get(c);
   }
-  
+
   while (c == ' ' || c == '\t')
     i.get(c);
-  
+
   assert(c == '/');
-  
+
   i >> d;
-  
+
   x = s * bigrational(n, d);
-  
+
   return i;
 }
 
