@@ -13,7 +13,7 @@ Makefile         Makefile
 
 include/         Header files
 src/             Source codes for the library
-main/            Smaple main files
+main/            Sample main files
 desolid/         Sample input files
 
 2) Installation
