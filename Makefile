@@ -7,7 +7,7 @@ ESOLID_dir = .
 
 ###  1. System configuration
 
-####  1-1. Hardware and perating system
+####  1-1. Hardware and operating system
 
 #####  Pick your architecture.
 CFLAGS = -D_Linux_i386_
