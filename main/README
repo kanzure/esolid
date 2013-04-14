@@ -4,14 +4,14 @@ URL:    http://research.cs.tamu.edu/keyser/geom/
 
 1) Files
 
-README			This file
+README                This file
 
-mapc_poly_main.cc	A sample file to use MAPC
-mapc_sturm_main.cc	A sample file to use MAPC
-mapc_pt1_main.cc	A sample file to use MAPC
-mapc_main.cc		A sample file to use MAPC
+mapc_poly_main.cc     A sample file to use MAPC
+mapc_sturm_main.cc    A sample file to use MAPC
+mapc_pt1_main.cc      A sample file to use MAPC
+mapc_main.cc          A sample file to use MAPC
 
-esolid_main.cc		A sample file to use ESOLID
+esolid_main.cc        A sample file to use ESOLID
 
 In the rest of this file, ${ESOLID_dir} refers to the installation
 directory, the parent directory where you are now.
