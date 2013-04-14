@@ -1,6 +1,3 @@
-//  file:    kfloatpoly.cc
-//  update:  10/04/02
-
 #include <kfloatpoly.h>
 
 K_FLOATPOLY :: K_FLOATPOLY()

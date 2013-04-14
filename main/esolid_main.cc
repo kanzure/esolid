@@ -1,6 +1,3 @@
-//  file:  esolid_main.cc
-//  update:  09/25/02
-
 #include <cassert>
 #include <cstdlib>
 #include <fstream>

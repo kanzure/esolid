@@ -1,6 +1,3 @@
-//  file:    VDM.h
-//  update:  10/20/02
-
 #ifndef _VDM_H
 #define _VDM_H
 

@@ -1,6 +1,3 @@
-//  file:    kratpoly.cc
-//  update:  10/04/02, 04/15/04
-
 #ifdef _EXPERIMENT
 #include <counter.h>
 #endif

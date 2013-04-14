@@ -1,6 +1,3 @@
-//  file:    gencyl.cc
-//  update:  01/22/03
-
 //#include <config.h>
 
 #include <gencyl.h>

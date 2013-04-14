@@ -1,6 +1,3 @@
-//  file:    kbox3d.h
-//  update:  11/30/02
-
 #ifndef _KBOX3D_H
 #define _KBOX3D_H
 

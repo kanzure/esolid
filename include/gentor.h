@@ -1,6 +1,3 @@
-//  file:    gentor.h
-//  update:  03/22/03
-
 #ifndef _GENTOR_H
 #define _GENTOR_H
 

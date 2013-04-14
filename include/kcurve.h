@@ -1,6 +1,3 @@
-//  file:    kcurve.h
-//  update:  11/13/02
-
 #ifndef _KCURVE_H
 #define _KCURVE_H
 

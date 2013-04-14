@@ -1,6 +1,3 @@
-//  file:    config.cc
-//  update:  10/14/02
-
 #include <bigrational.h>
 
 bigrational shrink_step = bigrational(1, 128);

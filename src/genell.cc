@@ -1,6 +1,3 @@
-//  file:    genell.cc
-//  update:  03/22/03
-
 //#include <config.h>
 
 #include <genell.h>

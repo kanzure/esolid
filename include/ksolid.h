@@ -1,6 +1,3 @@
-//  file:    ksolid.h
-//  update:  12/13/02
-
 #ifndef _KSOLID_H
 #define _KSOLID_H
 

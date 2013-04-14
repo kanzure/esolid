@@ -1,6 +1,3 @@
-//  file:    pascal.h
-//  update:  12/07/02
-
 #ifndef _PASCAL_H
 #define _PASCAL_H
 

@@ -1,6 +1,3 @@
-//  file:    bigint.cc
-//  update:  09/25/02
-
 #include <bigint.h>
 
 bigint :: bigint()

@@ -1,6 +1,3 @@
-//  file:    bigrational_matrix.cc
-//  update:  09/25/02
-
 #include <bigrational_matrix.h>
 
 bigrational_matrix :: bigrational_matrix(const unsigned long r,

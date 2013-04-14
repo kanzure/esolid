@@ -1,6 +1,3 @@
-//  file:    kpatch.cc
-//  update:  11/18/02
-
 #include <iomanip>
 
 #include <config.h>

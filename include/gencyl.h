@@ -1,6 +1,3 @@
-//  file:    gencyl.h
-//  update:  01/22/03
-
 #ifndef _GENCYL_H
 #define _GENCYL_H
 

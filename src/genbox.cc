@@ -1,6 +1,3 @@
-//  file:    genbox.cc
-//  update:  12/13/02
-
 //#include <config.h>
 
 #include <genbox.h>

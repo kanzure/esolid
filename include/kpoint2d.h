@@ -1,6 +1,3 @@
-//  file:    kpoint2d.h
-//  update:  11/03/02
-
 #ifndef _KPOINT2D_H
 #define _KPOINT2D_H
 

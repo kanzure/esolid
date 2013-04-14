@@ -1,6 +1,3 @@
-//  file:    kbox3d.cc
-//  update:  11/30/02
-
 #include <kbox3d.h>
 
 K_BOX3D :: K_BOX3D()

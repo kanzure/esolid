@@ -1,6 +1,3 @@
-//  file:    bigint_vector.cc
-//  update:  09/25/02
-
 #include <bigint_vector.h>
 
 bigint_vector :: bigint_vector(const unsigned long n)

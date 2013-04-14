@@ -1,6 +1,3 @@
-//  file:    bigint_matrix.cc
-//  update:  09/25/02
-
 #include <bigint_matrix.h>
 
 bigint_matrix :: bigint_matrix(const unsigned long r, const unsigned long c)

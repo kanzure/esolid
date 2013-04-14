@@ -1,6 +1,3 @@
-//  file :  timer.h
-//  last update:  07/09/01
-
 #ifndef __TIMER_H
 #define __TIMER_H
 

@@ -1,6 +1,3 @@
-//  file :  timer.cc
-//  last update:  07/09/01
-
 #include <cstdlib>
 
 #include <timer.h>

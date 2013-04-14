@@ -1,6 +1,3 @@
-//  file:    kintpoly.h
-//  update:  09/26/02
-
 #ifndef _KINTPOLY_H
 #define _KINTPOLY_H
 

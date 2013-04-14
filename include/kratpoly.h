@@ -1,6 +1,3 @@
-//  file:    kratpoly.h
-//  update:  10/04/02
-
 #ifndef _KRATPOLY_H
 #define _KRATPOLY_H
 

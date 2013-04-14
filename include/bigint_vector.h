@@ -1,6 +1,3 @@
-//  file:    bigint_vector.h
-//  update:  09/25/02
-
 #ifndef _BIGINT_VECTOR_H
 #define _BIGINT_VECTOR_H
 

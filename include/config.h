@@ -1,6 +1,3 @@
-//  file:    config.h
-//  update:  10/14/02
-
 #ifndef _CONFIG_H
 #define _CONFIG_H
 

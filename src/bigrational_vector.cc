@@ -1,6 +1,3 @@
-//  file:    bigrational_vector.cc
-//  update:  09/25/02
-
 #include <bigrational_vector.h>
 
 bigrational_vector :: bigrational_vector(const unsigned long n)

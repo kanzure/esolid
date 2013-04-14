@@ -1,6 +1,3 @@
-//  file:    fpfilter.cc
-//  update:  08/20/03
-
 #include <config.h>
 
 #include <fpfilter.h>

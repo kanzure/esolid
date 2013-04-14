@@ -1,6 +1,3 @@
-//  file:    kgraph.cc
-//  update:  01/15/03
-
 #include <config.h>
 
 #include <kgraph.h>

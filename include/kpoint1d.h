@@ -1,6 +1,3 @@
-//  file:    kpoint1d.h
-//  update:  10/18/02
-
 #ifndef _KPOINT1D_H
 #define _KPOINT1D_H
 

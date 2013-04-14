@@ -1,6 +1,3 @@
-//  file:    pascal.cc
-//  update:  12/07/02
-
 #include <pascal.h>
 
 Pascal :: Pascal()

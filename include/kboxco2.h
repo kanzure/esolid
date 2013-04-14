@@ -1,6 +1,3 @@
-//  file:    kboxco2.h
-//  update:  11/13/02
-
 #ifndef _KBOXCO2_H
 #define _KBOXCO2_H
 

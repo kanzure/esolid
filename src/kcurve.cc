@@ -1,6 +1,3 @@
-//  file:    kcurve.cc
-//  update:  11/13/02
-
 #include <config.h>
 
 #include <kcurve.h>

@@ -1,6 +1,3 @@
-//  file:    root1.cc
-//  update:  10/08/02
-
 #include <config.h>
 #ifdef _EXPERIMENT
 #include <counter.h>

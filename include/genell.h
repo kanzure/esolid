@@ -1,6 +1,3 @@
-//  file:    genell.h
-//  update:  03/22/03
-
 #ifndef _GENELL_H
 #define _GENELL_H
 

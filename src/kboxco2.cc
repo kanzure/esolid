@@ -1,6 +1,3 @@
-//  file:    kboxco2.cc
-//  update:  11/13/02
-
 #include <kboxco2.h>
 
 K_BOXCO2 :: K_BOXCO2()

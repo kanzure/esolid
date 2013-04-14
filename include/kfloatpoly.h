@@ -1,6 +1,3 @@
-//  file:    kfloatpoly.h
-//  update:  10/04/02
-
 #ifndef _KFLOATPOLY_H
 #define _KFLOATPOLY_H
 

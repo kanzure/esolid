@@ -1,6 +1,3 @@
-//  file:    kpartition.cc
-//  update:  01/15/03
-
 #include <kpartition.h>
 #include <kgraph.h>
 

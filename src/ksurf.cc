@@ -1,6 +1,3 @@
-//  file:    ksurf.cc
-//  update:  11/18/02
-
 #include <config.h>
 
 #include <cstdlib>

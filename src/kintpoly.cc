@@ -1,6 +1,3 @@
-//  file:    kintpoly.cc
-//  update:  09/26/02
-
 #include <kintpoly.h>
 
 K_INTPOLY :: K_INTPOLY()

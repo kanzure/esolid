@@ -1,6 +1,3 @@
-//  file:    kgraph.h
-//  update:  01/15/03
-
 #ifndef _KGRAPH_H
 #define _KGRAPH_H
 

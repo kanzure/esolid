@@ -1,6 +1,3 @@
-//  file:    kpartition.h
-//  update:  01/15/03
-
 #ifndef _KPARTITION_H
 #define _KPARTITION_H
 

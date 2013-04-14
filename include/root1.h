@@ -1,6 +1,3 @@
-//  file:    root1.h
-//  update:  10/08/02
-
 #ifndef _ROOT1_H
 #define _ROOT1_H
 

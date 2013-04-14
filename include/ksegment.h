@@ -1,6 +1,3 @@
-//  file:    ksegment.h
-//  update:  11/13/02
-
 #ifndef _KSEGMENT_H
 #define _KSEGMENT_H
 

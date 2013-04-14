@@ -1,6 +1,3 @@
-//  file:  msri_main.cc
-//  update:  04/13/04
-
 #include <cassert>
 #include <cstdlib>
 #include <fstream>

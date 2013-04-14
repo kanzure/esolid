@@ -1,6 +1,3 @@
-##  file:    Makefile
-##  update:  09/24/03
-
 default: esolid
 
 ESOLID_dir = .

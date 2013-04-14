@@ -1,6 +1,3 @@
-//  file:    kpoint1d.cc
-//  update:  10/18/02
-
 #include <config.h>
 #ifdef _EXPERIMENT
 #include <counter.h>

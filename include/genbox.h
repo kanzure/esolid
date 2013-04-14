@@ -1,6 +1,3 @@
-//  file:    genbox.h
-//  update:  12/13/02
-
 #ifndef _GENBOX_H
 #define _GENBOX_H
 

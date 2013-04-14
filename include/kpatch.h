@@ -1,6 +1,3 @@
-//  file:    kpatch.h
-//  update:  11/18/02
-
 #ifndef _KPATCH_H
 #define _KPATCH_H
 

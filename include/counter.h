@@ -1,6 +1,3 @@
-//  file:    counter.h
-//  update:  10/29/03
-
 #ifndef _COUNTER_H
 #define _COUNTER_H
 

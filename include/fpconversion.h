@@ -1,6 +1,3 @@
-//  file:    fpconversion.h
-//  update:  10/14/02
-
 #ifndef _FPCONVERSION_H
 #define _FPCONVERSION_H
 

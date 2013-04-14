@@ -1,6 +1,3 @@
-//  file:  main.cc
-//  update:  09/25/02
-
 #define DEG 64
 
 #include <cassert>

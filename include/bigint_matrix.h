@@ -1,6 +1,3 @@
-//  file:    bigint_matrix.h
-//  update:  09/25/02
-
 #ifndef _BIGINT_MATRIX_H
 #define _BIGINT_MATRIX_H
 

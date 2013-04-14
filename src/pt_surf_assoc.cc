@@ -1,6 +1,3 @@
-//  file:    pt_surf_assoc.cc
-//  update:  12/05/02
-
 #include <pt_surf_assoc.h>
 
 PT_SURF_ASSOC :: PT_SURF_ASSOC()

@@ -1,6 +1,3 @@
-//  file:    VDM.cc
-//  update:  10/20/02
-
 #include <VDM.h>
 
 int choose_pivot(bigrational_matrix& X, const unsigned long diag_num)

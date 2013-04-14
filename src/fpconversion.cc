@@ -1,6 +1,3 @@
-//  file:    fpconversion.cc
-//  update:  10/14/02
-
 #include <fpconversion.h>
 
 #if (defined(_Linux_i386_))

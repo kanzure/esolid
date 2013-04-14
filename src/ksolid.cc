@@ -1,6 +1,3 @@
-//  file:    ksolid.cc
-//  update:  12/13/02, 04/15/04
-
 #include <config.h>
 #ifdef _EXPERIMENT
 #include <counter.h>

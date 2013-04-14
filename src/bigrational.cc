@@ -1,6 +1,3 @@
-//  file:    bigrational.cc
-//  update:  09/25/02
-
 #include <bigrational.h>
 
 bigrational :: bigrational()

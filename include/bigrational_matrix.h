@@ -1,6 +1,3 @@
-//  file:    bigrational_matrix.h
-//  update:  09/25/02
-
 #ifndef _BIGRATIONAL_MATRIX_H
 #define _BIGRATIONAL_MATRIX_H
 

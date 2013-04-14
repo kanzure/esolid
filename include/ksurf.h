@@ -1,6 +1,3 @@
-//  file:    ksurf.h
-//  update:  11/18/02
-
 #ifndef _KSURF_H
 #define _KSURF_H
 

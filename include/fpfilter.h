@@ -1,6 +1,3 @@
-//  file:    fpfilter.h
-//  update:  10/04/02
-
 #ifndef _FPFILTER_H
 #define _FPFILTER_H
 

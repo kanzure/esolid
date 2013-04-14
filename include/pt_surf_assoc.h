@@ -1,6 +1,3 @@
-//  file:    pt_surf_assoc.h
-//  update:  12/05/02
-
 #ifndef PT_SURF_ASSOC_H
 #define PT_SURF_ASSOC_H
 

@@ -1,6 +1,3 @@
-//  file:    kpoly.h
-//  update:  09/26/02
-
 #ifndef _KPOLY_H
 #define _KPOLY_H
 
