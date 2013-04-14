@@ -120,7 +120,7 @@ those is different, edit Makefile and correct it.
 
             make esolid.
 
-       To male binary for the MAPC binary, "mapc", type
+       To make binary for the MAPC binary, "mapc", type
 
             make mapc.
 
