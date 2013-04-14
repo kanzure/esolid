@@ -21,7 +21,9 @@ friend class K_SOLID;
   
   unsigned long ID;
   
-  K_PATCH*      from;  //  The patch from where *this come.
+  K_PATCH* from;  //  patch from where *this comes
+  
+  bool is_head;  //  true if *this is the head of surf
   
   unsigned long num_trim_curves;
   K_CURVE**     trim_curves;
@@ -50,14 +52,16 @@ public:
   
   friend ostream& operator <<(ostream&, const K_PARTITION&);
   
-  //  other functions\
+  //  other functions
   
   K_POINT2D get_pt_in() const;
   
   friend unsigned long gen_partitions(K_PATCH* const, K_PARTITION**&);
+  
   friend unsigned long gen_adjacency(K_PARTITION** const, const unsigned long,
                                      K_GRAPH*&,
                                      long*&, K_GRAPH*&);
+  
   friend unsigned long select_relevant_partitions(K_PARTITION** const,
                                                   const unsigned long,
                                                   K_GRAPH* const,
@@ -66,8 +70,12 @@ public:
                                                   const int,
                                                   K_PARTITION**&,
                                                   K_GRAPH*&);
+  
+//  friend K_SOLID gen_new_solid(K_PARTITION**, const unsigned long,
+//                               K_PARTITION**, const unsigned long);
   friend K_SOLID gen_new_solid(K_PARTITION**, const unsigned long,
-                               K_PARTITION**, const unsigned long);
+                               K_PARTITION**, const unsigned long,
+                               const char);
 };
 
 #endif

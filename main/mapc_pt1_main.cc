@@ -1,6 +1,7 @@
 //  file:  pt1_main.cc
 //  update:  09/25/02
 
+#include <cassert>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -21,7 +22,7 @@ int main()
   bigrational pxc[] = { 1, 0, - bigrational(1, 4) };
 //  long        pxp[] = { 1 };
 //  bigrational pxc[] = { 1, - bigrational(1, 2) };
-  K_RATPOLY   PX(1, pxp, pxc);
+  K_RATPOLY   PX(1, pxp, 3, pxc);
   cerr << " PX = " << endl << flush;
   cerr << PX << endl << flush;
   
@@ -29,7 +30,7 @@ int main()
   bigrational pyc[] = { 1, 0, - bigrational(1, 9) };
 //  long        pyp[] = { 1 };
 //  bigrational pyc[] = { 1, - bigrational(1, 3) };
-  K_RATPOLY   PY(1, pyp, pyc);
+  K_RATPOLY   PY(1, pyp, 3, pyc);
   cerr << " PY = " << endl << flush;
   cerr << PY << endl << flush;
   
@@ -51,7 +52,7 @@ int main()
 
 //  long        pwp[] = { 3 };
 //  bigrational pwc[] = { 0, 1, 2, 0 };
-//  K_RATPOLY   PW(1, pwp, pwc);
+//  K_RATPOLY   PW(1, pwp, 4, pwc);
 //  cerr << " PW = " << endl << flush;
 //  cerr << PW << endl << flush;
 //  

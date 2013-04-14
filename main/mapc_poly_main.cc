@@ -1,6 +1,7 @@
 //  file:   mapc_poly_main.cc
 //  update: 04/15/04
 
+#include <cassert>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>

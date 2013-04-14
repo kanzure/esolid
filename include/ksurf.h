@@ -34,12 +34,6 @@ friend class K_SOLID;
   K_RATPOLY* W;
   int        mon_ok;
   
-  K_RATPOLY* X_Bern;
-  K_RATPOLY* Y_Bern;
-  K_RATPOLY* Z_Bern;
-  K_RATPOLY* W_Bern;
-  int        Bern_ok;
-  
   unsigned long ref_count;
   
   //  stream
@@ -88,19 +82,21 @@ public:
   
   K_BOX3D get_range(const bigrational&, const bigrational&,
                     const bigrational&, const bigrational&) const;
-  K_BOX3D get_range(const bigrational_vector&,
-                    const bigrational_vector&) const;
   
   friend unsigned long get_all_int_pts(const K_RATPOLY&,
                                        const K_SURF&, const K_SURF&,
                                        K_POINT2D**&);
+  
   friend int match_pts(K_POINT2D** const, const unsigned long, K_SURF* const,
                        K_POINT2D** const, const unsigned long, K_SURF* const);
   
   K_SURF split_surf(const bigrational&, const unsigned long) const;
   
+//  friend K_SOLID gen_new_solid(K_PARTITION**, const unsigned long,
+//                               K_PARTITION**, const unsigned long);
   friend K_SOLID gen_new_solid(K_PARTITION**, const unsigned long,
-                               K_PARTITION**, const unsigned long);
+                               K_PARTITION**, const unsigned long,
+                               const char);
   
   friend int get_patch4(const bigrational_vector [4], K_PATCH*&);
   

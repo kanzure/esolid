@@ -294,12 +294,11 @@ long* K_RATPOLY :: index_to_powers(const unsigned long i) const
   return p;
 }
 
-//  unsigned long K_RATPOLY :: index_to_total_deg(const unsigned long i) const
+//  unsigned long K_RATPOLY :: index_to_deg(const unsigned long i) const
 //    returns t s.t.
-//      coeffs[i] is the coefficient of the monomial of *this
-//                                        of total degree t.
+//      coeffs[i] is the coefficient of the monomial of *this of degree t.
 
-unsigned long K_RATPOLY :: index_to_total_deg(const unsigned long i) const
+unsigned long K_RATPOLY :: index_to_deg(const unsigned long i) const
 {
   assert(i < num_coeffs);
   
@@ -330,7 +329,7 @@ unsigned long K_RATPOLY :: get_total_deg() const
   t = 0;
   
   for (i = 0; i < num_coeffs; i++)
-    if (sgn(coeffs[i]) && (ti = index_to_total_deg(i)) > t)
+    if (sgn(coeffs[i]) && (ti = index_to_deg(i)) > t)
       t = ti;
   
   return t;

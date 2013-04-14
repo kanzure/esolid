@@ -13,7 +13,6 @@
 K_SURF :: K_SURF()
   : Impl(0), Impl_ok(0),
     X(0), Y(0), Z(0), W(0), mon_ok(0),
-    X_Bern(0), Y_Bern(0), Z_Bern(0), W_Bern(0), Bern_ok(0),
     ref_count(0)
 { }
 
@@ -50,12 +49,6 @@ K_SURF :: K_SURF(K_RATPOLY* const impl,
     mon_ok = 0;
   }
   
-  X_Bern  = 0;
-  Y_Bern  = 0;
-  Z_Bern  = 0;
-  W_Bern  = 0;
-  Bern_ok = 0;
-  
   ref_count = 0;
 }
 
@@ -70,12 +63,6 @@ K_SURF :: K_SURF(const K_RATPOLY& impl)
   Z      = 0;
   W      = 0;
   mon_ok = 0;
-  
-  X_Bern  = 0;
-  Y_Bern  = 0;
-  Z_Bern  = 0;
-  W_Bern  = 0;
-  Bern_ok = 0;
   
   ref_count = 0;
 }
@@ -104,20 +91,6 @@ K_SURF :: K_SURF(const K_SURF& s)
   else
     X = Y = Z = W = 0;
   
-  if (Bern_ok = s.Bern_ok)
-  {
-    X_Bern = s.X_Bern;
-    X_Bern->ref_count++;
-    Y_Bern = s.Y_Bern;
-    Y_Bern->ref_count++;
-    Z_Bern = s.Z_Bern;
-    Z_Bern->ref_count++;
-    W_Bern = s.W_Bern;
-    W_Bern->ref_count++;
-  }
-  else
-    X_Bern = Y_Bern = Z_Bern = W_Bern = 0;
-  
   ref_count = 0;
 }
 
@@ -140,18 +113,6 @@ K_SURF& K_SURF :: operator =(const K_SURF& s)
     if (W && !--W->ref_count)
       delete W;
     
-    if (X_Bern && !--X_Bern->ref_count)
-      delete X_Bern;
-    
-    if (Y_Bern && !--Y_Bern->ref_count)
-      delete Y_Bern;
-    
-    if (Z_Bern && !--Z_Bern->ref_count)
-      delete Z_Bern;
-    
-    if (W_Bern && !--W_Bern->ref_count)
-      delete W_Bern;
-    
     if (Impl_ok = s.Impl_ok)
     {
       Impl = s.Impl;
@@ -173,20 +134,6 @@ K_SURF& K_SURF :: operator =(const K_SURF& s)
     }
     else
       X = Y = Z = W = 0;
-    
-    if (Bern_ok = s.Bern_ok)
-    {
-      X_Bern = s.X_Bern;
-      X_Bern->ref_count++;
-      Y_Bern = s.Y_Bern;
-      Y_Bern->ref_count++;
-      Z_Bern = s.Z_Bern;
-      Z_Bern->ref_count++;
-      W_Bern = s.W_Bern;
-      W_Bern->ref_count++;
-    }
-    else
-      X_Bern = Y_Bern = Z_Bern = W_Bern = 0;
   }
   
   return *this;
@@ -207,19 +154,7 @@ K_SURF :: ~K_SURF()
     delete Z;
   
   if (W && !--W->ref_count)
-    delete W;
-  
-  if (X_Bern && !--X_Bern->ref_count)
-    delete X_Bern;
-  
-  if (Y_Bern && !--Y_Bern->ref_count)
-    delete Y_Bern;
-  
-  if (Z_Bern && !--Z_Bern->ref_count)
-    delete Z_Bern;
-  
-  if (W_Bern && !--W_Bern->ref_count)
-    delete W_Bern;
+    delete W;  
 }
 
 ostream& K_SURF :: output(ostream& o) const
@@ -235,15 +170,7 @@ ostream& K_SURF :: output(ostream& o) const
     o << " parametrized: W = " << endl << *W << flush;
   }
   
-  if (Bern_ok)
-  {
-    o << " parametrized: X_Bern = " << endl << *X_Bern << endl << flush;
-    o << " parametrized: Y_Bern = " << endl << *Y_Bern << endl << flush;
-    o << " parametrized: Z_Bern = " << endl << *Z_Bern << endl << flush;
-    o << " parametrized: W_Bern = " << endl << *W_Bern << flush;
-  }
-  
-  if (!Impl_ok && !mon_ok && !Bern_ok)
+  if (!Impl_ok && !mon_ok)
     o << " NULL " << flush;
   
   return o;
@@ -533,217 +460,6 @@ K_BOX3D K_SURF :: get_range(const bigrational& l_s,
   return b;
 }
 
-K_BOX3D K_SURF :: get_range(const bigrational_vector& l,
-                            const bigrational_vector& h) const
-{
-  assert(mon_ok);
-  
-  unsigned long i;
-  K_BOX3D       b;
-  bigrational   X_l, X_h, Y_l, Y_h, Z_l, Z_h, W_l, W_h;
-  
-  X->eval_range(l, h, X_l, X_h);
-  Y->eval_range(l, h, Y_l, Y_h);
-  Z->eval_range(l, h, Z_l, Z_h);
-  W->eval_range(l, h, W_l, W_h);
-  
-  if (sgn(W_h) < 0)  //  if (W_l <= W_h < 0)
-  {
-    if (sgn(X_l) > 0)  //  if (0 < X_l <= X_h)
-    {
-      b.low[0]  = X_h / W_h;
-      b.high[0] = X_l / W_l;
-    }
-    else if (sgn(X_h) < 0)  //  if (X_l <= X_h < 0)
-    {
-      b.low[0]  = X_h / W_l;
-      b.high[0] = X_l / W_h;
-    }
-    else  //  if (X_l <= 0 <= X_h)
-    {
-      b.low[0]  = X_h / W_h;
-      b.high[0] = X_l / W_h;
-    }
-    
-    if (sgn(Y_l) > 0)  //  if (0 < Y_l <= Y_h)
-    {
-      b.low[1]  = Y_h / W_h;
-      b.high[1] = Y_l / W_l;
-    }
-    else if (sgn(Y_h) < 0)  //  if (Y_l <= Y_h < 0)
-    {
-      b.low[1]  = Y_h / W_l;
-      b.high[1] = Y_l / W_h;
-    }
-    else  //  if (Y_l <= 0 <= Y_h)
-    {
-      b.low[1]  = Y_h / W_h;
-      b.high[1] = Y_l / W_h;
-    }
-    
-    if (sgn(Z_l) > 0)  //  if (0 < Z_l <= Z_h)
-    {
-      b.low[2]  = Z_h / W_h;
-      b.high[2] = Z_l / W_l;
-    }
-    else if (sgn(Z_h) < 0)  //  if (Z_l <= Z_h < 0)
-    {
-      b.low[2]  = Z_h / W_l;
-      b.high[2] = Z_l / W_h;
-    }
-    else  //  if (Z_l <= 0 <= Z_h)
-    {
-      b.low[2]  = Z_h / W_h;
-      b.high[2] = Z_l / W_h;
-    }
-    
-    for (i = 0; i < 3; i++)
-      b.low_infty[i] = b.high_infty[i] = 0;
-  }
-  else if (sgn(W_l) < 0 && !sgn(W_h))
-  {
-    if (sgn(X_l) > 0)  //  if (0 < X_l <= X_h)
-    {
-      b.low[0]       = X_h / W_l;
-      b.low_infty[0] = 0;
-    }
-    else if (sgn(X_h) < 0)  //  if (X_l <= X_h < 0)
-    {
-      b.high[0]       = X_l / W_l;
-      b.high_infty[0] = 0;
-    }
-    
-    if (sgn(Y_l) > 0)  //  if (0 < Y_l <= Y_h)
-    {
-      b.low[1]       = Y_h / W_l;
-      b.low_infty[1] = 0;
-    }
-    else if (sgn(Y_h) < 0)  //  if (Y_l <= Y_h < 0)
-    {
-      b.high[1]       = Y_l / W_l;
-      b.high_infty[1] = 0;
-    }
-    
-    if (sgn(Z_l) > 0)  //  if (0 < Z_l <= Z_h)
-    {
-      b.low[2]       = Z_h / W_l;
-      b.low_infty[2] = 0;
-    }
-    else if (sgn(Z_h) < 0)  //  if (Z_l <= Z_h < 0)
-    {
-      b.high[2]       = Z_l / W_l;
-      b.high_infty[2] = 0;
-    }
-  }
-  else if (!sgn(W_l) && !sgn(W_h))
-  {
-    if (sgn(X_l) > 0)  //  if (0 < X_l <= X_h)
-      b.low_infty[0] = 1;
-    else if (sgn(X_h) < 0)  //  if (X_l <= X_h < 0)
-      b.high_infty[0] = - 1;
-    
-    if (sgn(Y_l) > 0)  //  if (0 < Y_l <= Y_h)
-      b.low_infty[1] = 1;
-    else if (sgn(Y_h) < 0)  //  if (Y_l <= Y_h < 0)
-      b.high_infty[1] = - 1;
-    
-    if (sgn(Z_l) > 0)  //  if (0 < Z_l <= Z_h)
-      b.low_infty[2] = 1;
-    else if (sgn(Z_h) < 0)  //  if (Z_l <= Z_h < 0)
-      b.high_infty[2] = - 1;
-  }
-  else if (!sgn(W_l) && sgn(W_h) > 0)
-  {
-    if (sgn(X_l) > 0)  //  if (0 < X_l <= X_h)
-    {
-      b.low[0]       = X_l / W_h;
-      b.low_infty[0] = 0;
-    }
-    else if (sgn(X_h) < 0)  //  if (X_l <= X_h < 0)
-    {
-      b.high[0]       = X_h / W_h;
-      b.high_infty[0] = 0;
-    }
-    
-    if (sgn(Y_l) > 0)  //  if (0 < Y_l <= Y_h)
-    {
-      b.low[1]       = Y_l / W_h;
-      b.low_infty[1] = 0;
-    }
-    else if (sgn(Y_h) < 0)  //  if (Y_l <= Y_h < 0)
-    {
-      b.high[1]       = Y_h / W_h;
-      b.high_infty[1] = 0;
-    }
-    
-    if (sgn(Z_l) > 0)  //  if (0 < Z_l <= Z_h)
-    {
-      b.low[2]       = Z_l / W_h;
-      b.low_infty[2] = 0;
-    }
-    else if (sgn(Z_h) < 0)  //  if (Z_l <= Z_h < 0)
-    {
-      b.high[2]       = Z_h / W_h;
-      b.high_infty[2] = 0;
-    }
-  }
-  else if (sgn(W_l) > 0)  //  if (0 < W_l <= W_h)
-  {
-    if (sgn(X_l) > 0)  //  if (0 < X_l <= X_h)
-    {
-      b.low[0]  = X_l / W_h;
-      b.high[0] = X_h / W_l;
-    }
-    else if (sgn(X_h) < 0)  //  if (X_l <= X_h < 0)
-    {
-      b.low[0]  = X_l / W_l;
-      b.high[0] = X_h / W_h;
-    }
-    else  //  if (X_l <= 0 <= X_h)
-    {
-      b.low[0]  = X_l / W_l;
-      b.high[0] = X_h / W_l;
-    }
-    
-    if (sgn(Y_l) > 0)  //  if (0 < Y_l <= Y_h)
-    {
-      b.low[1]  = Y_l / W_h;
-      b.high[1] = Y_h / W_l;
-    }
-    else if (sgn(Y_h) < 0)  //  if (Y_l <= Y_h < 0)
-    {
-      b.low[1]  = Y_l / W_l;
-      b.high[1] = Y_h / W_h;
-    }
-    else  //  if (Y_l <= 0 <= Y_h)
-    {
-      b.low[1]  = Y_l / W_l;
-      b.high[1] = Y_h / W_l;
-    }
-    
-    if (sgn(Z_l) > 0)  //  if (0 < Z_l <= Z_h)
-    {
-      b.low[2]  = Z_l / W_h;
-      b.high[2] = Z_h / W_l;
-    }
-    else if (sgn(Z_h) < 0)  //  if (Z_l <= Z_h < 0)
-    {
-      b.low[2]  = Z_l / W_l;
-      b.high[2] = Z_h / W_h;
-    }
-    else  //  if (Z_l <= 0 <= Z_h)
-    {
-      b.low[2]  = Z_l / W_l;
-      b.high[2] = Z_h / W_l;
-    }
-    
-    for (i = 0; i < 3; i++)
-      b.low_infty[i] = b.high_infty[i] = 0;
-  }
-  
-  return b;
-}
-
 int match_pts(K_POINT2D** const pts1, const unsigned long num_pts1,
               K_SURF* const s1,
               K_POINT2D** const pts2, const unsigned long num_pts2,
@@ -766,9 +482,8 @@ int match_pts(K_POINT2D** const pts1, const unsigned long num_pts1,
     boxes1 = new K_BOX3D [num_pts1];
     
     for (i = 0; i < num_pts1; i++)
-//      boxes1[i] = s1->get_range(pts1[i]->get_low_s(), pts1[i]->get_high_s(),
-//                                pts1[i]->get_low_t(), pts1[i]->get_high_t());
-      boxes1[i] = s1->get_range(pts1[i]->get_low(), pts1[i]->get_high());
+      boxes1[i] = s1->get_range(pts1[i]->get_low_s(), pts1[i]->get_high_s(),
+                                pts1[i]->get_low_t(), pts1[i]->get_high_t());
   }
   else  //  if (!num_pts1)
     boxes1 = 0;
@@ -778,9 +493,8 @@ int match_pts(K_POINT2D** const pts1, const unsigned long num_pts1,
     boxes2 = new K_BOX3D [num_pts2];
     
     for (i = 0; i < num_pts2; i++)
-//      boxes2[i] = s2->get_range(pts2[i]->get_low_s(), pts2[i]->get_high_s(),
-//                                pts2[i]->get_low_t(), pts2[i]->get_high_t());
-      boxes2[i] = s2->get_range(pts2[i]->get_low(), pts2[i]->get_high());
+      boxes2[i] = s2->get_range(pts2[i]->get_low_s(), pts2[i]->get_high_s(),
+                                pts2[i]->get_low_t(), pts2[i]->get_high_t());
   }
   else  //  if(!num_pts2)
     boxes2 = 0;
@@ -859,18 +573,16 @@ int match_pts(K_POINT2D** const pts1, const unsigned long num_pts1,
     for (i = num_match; i < num_pts1; i++)
     {
       pts1[i]->shrink(shrink_step, shrink_step);
-//      boxes1[i] = s1->get_range(pts1[i]->get_low_s(), pts1[i]->get_high_s(),
-//                                pts1[i]->get_low_t(), pts1[i]->get_high_t());
-      boxes1[i] = s1->get_range(pts1[i]->get_low(), pts1[i]->get_high());
+      boxes1[i] = s1->get_range(pts1[i]->get_low_s(), pts1[i]->get_high_s(),
+                                pts1[i]->get_low_t(), pts1[i]->get_high_t());
     }
     
     if (num_match < num_pts1)
       for (i = num_match; i < num_pts2; i++)
       {
         pts2[i]->shrink(shrink_step, shrink_step);
-//        boxes2[i] = s2->get_range(pts2[i]->get_low_s(), pts2[i]->get_high_s(),
-//                                  pts2[i]->get_low_t(), pts2[i]->get_high_t());
-        boxes2[i] = s2->get_range(pts2[i]->get_low(), pts2[i]->get_high());
+        boxes2[i] = s2->get_range(pts2[i]->get_low_s(), pts2[i]->get_high_s(),
+                                  pts2[i]->get_low_t(), pts2[i]->get_high_t());
       }
   }
   
@@ -1697,6 +1409,17 @@ K_SURF K_SURF :: split_surf(const bigrational& b, const unsigned long i) const
   return K_SURF(*I);
 }
 
+//  int K_SURF :: Bezier_output(ostream& out_fs,
+//                              const bigrational& l_s,
+//                              const bigrational& h_s,
+//                              const bigrational& l_t,
+//                              const bigrational& h_t) const
+//    compute Bezier surface representation of *this.
+//    control points are ordered s.t.
+//      if the thumb         of our right hand goes l_s -> h_s and
+//         the forefinger                           l_t -> h_t then
+//         the middle finger                   is the normal to the surface.
+
 int K_SURF :: Bezier_output(ostream& out_fs,
                             const bigrational& l_s,
                             const bigrational& h_s,
@@ -1779,7 +1502,11 @@ int K_SURF :: Bezier_output(ostream& out_fs,
   Z_Bern = Z_sub.conv_to_Bernstein(max_deg_s, max_deg_t);
   W_Bern = W_sub.conv_to_Bernstein(max_deg_s, max_deg_t);
   
+  //  Dump max. degrees in s and t.
+  
   out_fs << max_deg_s << "  " << max_deg_t << endl << flush;
+  
+  //  Dump control points.
   
   for (i = 0; i <= max_deg_s; i++)
   {
@@ -1791,7 +1518,7 @@ int K_SURF :: Bezier_output(ostream& out_fs,
       
       out_fs <<
         X_Bern.get_coeff(p).as_double() << "  " <<
-        Y_Bern.get_coeff(p).as_double() << "  " <<        
+        Y_Bern.get_coeff(p).as_double() << "  " <<
         Z_Bern.get_coeff(p).as_double() << "  " <<
         W_Bern.get_coeff(p).as_double() << "  " <<
         endl << flush;

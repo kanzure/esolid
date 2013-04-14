@@ -16,8 +16,9 @@
 
 #define DIM 3
 #define MAX_NUM_GOOD_FP_BITS 30
-#define IN  0
-#define OUT 1
+#define IN  1
+#define OUT -1
+//#define ALL_CCW
 
 extern bigrational shrink_step;
 extern bigrational init_tol;

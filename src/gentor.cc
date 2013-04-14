@@ -1,7 +1,7 @@
 //  file:    gentor.cc
 //  update:  03/22/03
 
-//#include <config.h>
+#include <config.h>
 
 #include <gentor.h>
 
@@ -390,6 +390,204 @@ int perturb_tor(const bigrational_vector& center,
 //                  const bigrational& r1)
 //    returns a torus specified by (center, ...).
 
+#ifndef ALL_CCW
+K_SOLID gen_tor(const bigrational_vector& center,
+                const bigrational_vector& a0,
+                const bigrational_vector& a1,
+                const bigrational_vector& a2,
+                const bigrational& r0,
+                const bigrational& r1)
+{
+  assert(center.get_dim() == 3);
+  assert(a0.get_dim() == 3);
+  assert(a1.get_dim() == 3);
+  assert(a2.get_dim() == 3);
+  
+  const unsigned long num_patches = 4;
+  
+  unsigned long      i;
+  K_PATCH**          patches;
+  bigrational_vector minus_a0;
+  bigrational_vector minus_a1;
+  bigrational_vector minus_a2;
+  K_RATPOLY*         X;
+  K_RATPOLY*         Y;
+  K_RATPOLY*         Z;
+  K_RATPOLY*         W;
+  K_RATPOLY*         impl;
+  bigrational_vector center_plus_a0;
+  bigrational_vector center_minus_a0;
+  bigrational_vector center_plus_a1;
+  bigrational_vector center_minus_a1;
+  bigrational_vector center_plus_a2;
+  bigrational_vector center_minus_a2;
+  bigrational_vector four_pts[4];
+  K_RATPOLY*         impl_bilin;
+  K_SURF*            surf_split1;
+  K_SURF*            surf_split2;
+  K_SOLID            s;
+  
+  //  1.  Set patches.
+  
+  patches = new K_PATCH* [num_patches];
+  
+  minus_a0 = - a0;
+  minus_a1 = - a1;
+  minus_a2 = - a2;
+  
+  //  patches[0]:  top right
+  
+  get_param_tor(center, a0, a1, a2, r0, r1, X, Y, Z, W);
+  assert(implicitize(*X, *Y, *Z, *W, 4, impl));
+  get_patch_tor(impl, X, Y, Z, W, patches[0]);
+  
+  //  patches[1]:  top left
+  
+  get_param_tor(center, a0, minus_a1, minus_a2, r0, r1, X, Y, Z, W);
+  get_patch_tor(impl, X, Y, Z, W, patches[1]);
+  
+  //  patches[2]:  bottom right
+  
+  get_param_tor(center, minus_a0, minus_a1, a2, r0, r1, X, Y, Z, W);
+  get_patch_tor(impl, X, Y, Z, W, patches[2]);
+  
+  //  patches[3]:  bottom left
+  
+  get_param_tor(center, minus_a0, a1, minus_a2, r0, r1, X, Y, Z, W);
+  get_patch_tor(impl, X, Y, Z, W, patches[3]);
+  
+  //  2.  Compute surf_split1 and surf_split2.
+  
+  center_plus_a0  = center + a0;
+  center_minus_a0 = center - a0;
+  center_plus_a1  = center + a1;
+  center_minus_a1 = center - a1;
+  center_plus_a2  = center + a2;
+  center_minus_a2 = center - a2;
+  
+  four_pts[0] = center_plus_a1;
+  four_pts[1] = center_minus_a1;
+  four_pts[2] = center_plus_a2;
+  four_pts[3] = center_minus_a2;
+  get_impl_plane_bilin(four_pts, impl_bilin);
+  surf_split1 = new K_SURF(*impl_bilin);
+  delete impl_bilin;
+  
+  four_pts[0] = center_plus_a1;
+  four_pts[1] = center_minus_a1;
+  four_pts[2] = center_plus_a0;
+  four_pts[3] = center_minus_a0;
+  get_impl_plane_bilin(four_pts, impl_bilin);
+  surf_split2 = new K_SURF(*impl_bilin);
+  delete impl_bilin;
+  
+  //  3.  For each patch, set its adj_surfs and adj_patches.
+  
+  //  patches[0]:  top right
+  
+  patches[0]->adj_surfs[0] = surf_split1;
+  patches[0]->adj_surfs[0]->ref_count++;
+  patches[0]->adj_surfs[1] = surf_split2;
+  patches[0]->adj_surfs[1]->ref_count++;
+  patches[0]->adj_surfs[2] = surf_split1;
+  patches[0]->adj_surfs[2]->ref_count++;
+  patches[0]->adj_surfs[3] = surf_split2;
+  patches[0]->adj_surfs[3]->ref_count++;
+  
+  patches[0]->adj_patches[0] = patches[2];
+  patches[0]->adj_patches[0]->ref_count++;
+  patches[0]->adj_patches[1] = patches[1];
+  patches[0]->adj_patches[1]->ref_count++;
+  patches[0]->adj_patches[2] = patches[2];
+  patches[0]->adj_patches[2]->ref_count++;
+  patches[0]->adj_patches[3] = patches[1];
+  patches[0]->adj_patches[3]->ref_count++;
+  
+  //  patches[1]:  top left
+  
+  patches[1]->adj_surfs[0] = surf_split1;
+  patches[1]->adj_surfs[0]->ref_count++;
+  patches[1]->adj_surfs[1] = surf_split2;
+  patches[1]->adj_surfs[1]->ref_count++;
+  patches[1]->adj_surfs[2] = surf_split1;
+  patches[1]->adj_surfs[2]->ref_count++;
+  patches[1]->adj_surfs[3] = surf_split2;
+  patches[1]->adj_surfs[3]->ref_count++;
+  
+  patches[1]->adj_patches[0] = patches[3];
+  patches[1]->adj_patches[0]->ref_count++;
+  patches[1]->adj_patches[1] = patches[0];
+  patches[1]->adj_patches[1]->ref_count++;
+  patches[1]->adj_patches[2] = patches[3];
+  patches[1]->adj_patches[2]->ref_count++;
+  patches[1]->adj_patches[3] = patches[0];
+  patches[1]->adj_patches[3]->ref_count++;
+  
+  //  patches[2]:  bottom right
+  
+  patches[2]->adj_surfs[0] = surf_split1;
+  patches[2]->adj_surfs[0]->ref_count++;
+  patches[2]->adj_surfs[1] = surf_split2;
+  patches[2]->adj_surfs[1]->ref_count++;
+  patches[2]->adj_surfs[2] = surf_split1;
+  patches[2]->adj_surfs[2]->ref_count++;
+  patches[2]->adj_surfs[3] = surf_split2;
+  patches[2]->adj_surfs[3]->ref_count++;
+  
+  patches[2]->adj_patches[0] = patches[0];
+  patches[2]->adj_patches[0]->ref_count++;
+  patches[2]->adj_patches[1] = patches[3];
+  patches[2]->adj_patches[1]->ref_count++;
+  patches[2]->adj_patches[2] = patches[0];
+  patches[2]->adj_patches[2]->ref_count++;
+  patches[2]->adj_patches[3] = patches[3];
+  patches[2]->adj_patches[3]->ref_count++;
+  
+  //  patches[3]:  bottom left
+  
+  patches[3]->adj_surfs[0] = surf_split1;
+  patches[3]->adj_surfs[0]->ref_count++;
+  patches[3]->adj_surfs[1] = surf_split2;
+  patches[3]->adj_surfs[1]->ref_count++;
+  patches[3]->adj_surfs[2] = surf_split1;
+  patches[3]->adj_surfs[2]->ref_count++;
+  patches[3]->adj_surfs[3] = surf_split2;
+  patches[3]->adj_surfs[3]->ref_count++;
+  
+  patches[3]->adj_patches[0] = patches[1];
+  patches[3]->adj_patches[0]->ref_count++;
+  patches[3]->adj_patches[1] = patches[2];
+  patches[3]->adj_patches[1]->ref_count++;
+  patches[3]->adj_patches[2] = patches[1];
+  patches[3]->adj_patches[2]->ref_count++;
+  patches[3]->adj_patches[3] = patches[2];
+  patches[3]->adj_patches[3]->ref_count++;
+  
+  //  4.  Associate edges.
+  
+  patches[0]->trim_curves[0]->assoc(patches[2]->trim_curves[0], - 1);
+  patches[0]->trim_curves[1]->assoc(patches[1]->trim_curves[1], - 1);
+  patches[0]->trim_curves[2]->assoc(patches[2]->trim_curves[2], - 1);
+  patches[0]->trim_curves[3]->assoc(patches[1]->trim_curves[3], - 1);
+  
+  patches[3]->trim_curves[0]->assoc(patches[1]->trim_curves[0], - 1);
+  patches[3]->trim_curves[1]->assoc(patches[2]->trim_curves[1], - 1);
+  patches[3]->trim_curves[2]->assoc(patches[1]->trim_curves[2], - 1);
+  patches[3]->trim_curves[3]->assoc(patches[2]->trim_curves[3], - 1);
+  
+  for (i = 0; i < num_patches; i++)
+  {
+    patches[i]->surf->X->reduce_deg();
+    patches[i]->surf->Y->reduce_deg();
+    patches[i]->surf->Z->reduce_deg();
+    patches[i]->surf->W->reduce_deg();
+  }
+  
+  s = K_SOLID(patches, num_patches);
+  
+  return s;
+}
+#else
 K_SOLID gen_tor(const bigrational_vector& center,
                 const bigrational_vector& a0,
                 const bigrational_vector& a1,
@@ -414,10 +612,10 @@ K_SOLID gen_tor(const bigrational_vector& center,
   K_RATPOLY*         W;
   K_RATPOLY*         impl;
   bigrational_vector center_plus_a0;
-  bigrational_vector center_plus_a1;
-  bigrational_vector center_plus_a2;
   bigrational_vector center_minus_a0;
+  bigrational_vector center_plus_a1;
   bigrational_vector center_minus_a1;
+  bigrational_vector center_plus_a2;
   bigrational_vector center_minus_a2;
   bigrational_vector four_pts[4];
   K_RATPOLY*         impl_bilin;
@@ -432,15 +630,23 @@ K_SOLID gen_tor(const bigrational_vector& center,
   minus_a0 = - a0;
   minus_a2 = - a2;
   
+  //  patches[0]:  top right
+  
   get_param_tor(center, a0, a1, a2, r0, r1, X, Y, Z, W);
   assert(implicitize(*X, *Y, *Z, *W, 4, impl));
   get_patch_tor(impl, X, Y, Z, W, patches[0]);
   
+  //  patches[1]:  top left
+  
   get_param_tor(center, a0, a1, minus_a2, r0, r1, X, Y, Z, W);
   get_patch_tor(impl, X, Y, Z, W, patches[1]);
   
+  //  patches[2]:  bottom right
+  
   get_param_tor(center, minus_a0, a1, a2, r0, r1, X, Y, Z, W);
   get_patch_tor(impl, X, Y, Z, W, patches[2]);
+  
+  //  patches[3]:  bottom left
   
   get_param_tor(center, minus_a0, a1, minus_a2, r0, r1, X, Y, Z, W);
   get_patch_tor(impl, X, Y, Z, W, patches[3]);
@@ -448,10 +654,10 @@ K_SOLID gen_tor(const bigrational_vector& center,
   //  2.  Compute surf_split1 and surf_split2.
   
   center_plus_a0  = center + a0;
-  center_plus_a1  = center + a1;
-  center_plus_a2  = center + a2;
   center_minus_a0 = center - a0;
+  center_plus_a1  = center + a1;
   center_minus_a1 = center - a1;
+  center_plus_a2  = center + a2;
   center_minus_a2 = center - a2;
   
   four_pts[0] = center_plus_a1;
@@ -465,14 +671,14 @@ K_SOLID gen_tor(const bigrational_vector& center,
   four_pts[0] = center_plus_a1;
   four_pts[1] = center_minus_a1;
   four_pts[2] = center_plus_a0;
-  four_pts[3] = center_minus_a1;
+  four_pts[3] = center_minus_a0;
   get_impl_plane_bilin(four_pts, impl_bilin);
   surf_split2 = new K_SURF(*impl_bilin);
   delete impl_bilin;
   
   //  3.  For each patch, set its adj_surfs and adj_patches.
   
-  //  patches[0]:
+  //  patches[0]:  top right
   
   patches[0]->adj_surfs[0] = surf_split1;
   patches[0]->adj_surfs[0]->ref_count++;
@@ -492,7 +698,7 @@ K_SOLID gen_tor(const bigrational_vector& center,
   patches[0]->adj_patches[3] = patches[1];
   patches[0]->adj_patches[3]->ref_count++;
   
-  //  patches[1]:
+  //  patches[1]:  top left
   
   patches[1]->adj_surfs[0] = surf_split1;
   patches[1]->adj_surfs[0]->ref_count++;
@@ -512,7 +718,7 @@ K_SOLID gen_tor(const bigrational_vector& center,
   patches[1]->adj_patches[3] = patches[0];
   patches[1]->adj_patches[3]->ref_count++;
   
-  //  patches[2]:
+  //  patches[2]:  bottom right
   
   patches[2]->adj_surfs[0] = surf_split1;
   patches[2]->adj_surfs[0]->ref_count++;
@@ -532,7 +738,7 @@ K_SOLID gen_tor(const bigrational_vector& center,
   patches[2]->adj_patches[3] = patches[3];
   patches[2]->adj_patches[3]->ref_count++;
   
-  //  patches[3]:
+  //  patches[3]:  bottom left
   
   patches[3]->adj_surfs[0] = surf_split1;
   patches[3]->adj_surfs[0]->ref_count++;
@@ -576,11 +782,12 @@ K_SOLID gen_tor(const bigrational_vector& center,
   
   return s;
 }
+#endif
 
 K_SOLID read_tor(istream& in_fs, const bigrational& perturb_factor)
 {
   unsigned long      i;
-//  unsigned long      type;
+  unsigned long      type;
   bigrational_vector center(3);
   bigrational_vector a0(3);
   bigrational_vector a1(3);

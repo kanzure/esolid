@@ -21,7 +21,8 @@ int round_nearest()
   fpu_control_t w;
   
   _FPU_GETCW(w);
-  _FPU_SETCW(w & 0xf3ff | _FPU_RC_NEAREST);
+  w = w & 0xf3ff | _FPU_RC_NEAREST;
+  _FPU_SETCW(w);
   
 //#endif
 //#ifdef _SunOS_
@@ -49,7 +50,8 @@ int round_down()
   fpu_control_t w;
   
   _FPU_GETCW(w);
-  _FPU_SETCW(w & 0xf3ff | _FPU_RC_DOWN);
+  w = w & 0xf3ff | _FPU_RC_DOWN;
+  _FPU_SETCW(w);
   
 //#endif
 //#ifdef _SunOS_
@@ -77,7 +79,8 @@ int round_up()
   fpu_control_t w;
   
   _FPU_GETCW(w);
-  _FPU_SETCW(w & 0xf3ff | _FPU_RC_UP);
+  w = w & 0xf3ff | _FPU_RC_UP;
+  _FPU_SETCW(w);
   
 //#endif
 //#ifdef _SunOS_
@@ -105,7 +108,8 @@ int round_zero()
   fpu_control_t w;
   
   _FPU_GETCW(w);
-  _FPU_SETCW(w & 0xf3ff | _FPU_RC_ZERO);
+  w = w & 0xf3ff | _FPU_RC_ZERO;
+  _FPU_SETCW(w);
   
 //#endif
 //#ifdef _SunOS_

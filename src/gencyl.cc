@@ -54,18 +54,18 @@ int get_impl_plane(const bigrational_vector& pts0,
 //  int get_cyl_cap(const bigrational_vector& center,
 //                  const bigrational_vector& vecA,
 //                  const bigrational_vector& vecB,
-//                  const int is_ccw,
+//                  const bool is_ccw,
 //                  K_PATCH*& cap)
 //    computes the ellipse (the cap of a cylinder)
 //      whose center is "center" and semi-major/minor axes are vecA/B.
 //    trim_curves are oriented counterclockwise (the bottom of the cylinder)
-//      if is_ccw == 1 and
+//      if is_ccw == true and
 //    clockwise (the top of the cylinder) otherwise.
 
 int get_cyl_cap(const bigrational_vector& center,
                 const bigrational_vector& vecA,
                 const bigrational_vector& vecB,
-                const int is_ccw,
+                const bool is_ccw,
                 K_PATCH*& cap)
 {
   assert(center.get_dim() == 3);
@@ -352,7 +352,7 @@ int get_cyl_side(K_RATPOLY* const I,
       p[1] = 1;
       poly->get_coeff(p) = 1;
       
-      segment[0] = new K_SEGMENT(new K_POINT2D(0, 0), new K_POINT2D(1, 0), 1);
+      segment[0] = new K_SEGMENT(new K_POINT2D(0, 0), new K_POINT2D(1, 0));
     }
     else if (i == 1)
     {
@@ -367,7 +367,7 @@ int get_cyl_side(K_RATPOLY* const I,
       p[1] = 0;
       poly->get_coeff(p) = - 1;
       
-      segment[0] = new K_SEGMENT(new K_POINT2D(1, 0), new K_POINT2D(1, 1), 1);
+      segment[0] = new K_SEGMENT(new K_POINT2D(1, 0), new K_POINT2D(1, 1));
     }
     else if (i == 2)
     {
@@ -382,7 +382,7 @@ int get_cyl_side(K_RATPOLY* const I,
       p[1] = 0;
       poly->get_coeff(p) = - 1;
       
-      segment[0] = new K_SEGMENT(new K_POINT2D(1, 1), new K_POINT2D(0, 1), 1);
+      segment[0] = new K_SEGMENT(new K_POINT2D(1, 1), new K_POINT2D(0, 1));
     }
     else  //  if (i == 3)
     {
@@ -394,7 +394,7 @@ int get_cyl_side(K_RATPOLY* const I,
       p[1] = 0;
       poly->get_coeff(p) = 1;
       
-      segment[0] = new K_SEGMENT(new K_POINT2D(0, 1), new K_POINT2D(0, 0), 1);
+      segment[0] = new K_SEGMENT(new K_POINT2D(0, 1), new K_POINT2D(0, 0));
     }
     
     segment[0]->ref_count++;
@@ -563,7 +563,7 @@ K_SOLID gen_cyl(const bigrational_vector& base,
   vecA   = base + base_vecA;
   vecB   = base + base_vecB;
   
-  get_cyl_cap(center, vecA, vecB, 1, patches[0]);
+  get_cyl_cap(center, vecA, vecB, true, patches[0]);
   
   //  patches[1], ..., patches[4] -- 4 sides
   
@@ -603,7 +603,7 @@ K_SOLID gen_cyl(const bigrational_vector& base,
   vecA   = base + centerline + top_vecA;
   vecB   = base + centerline + top_vecB;
   
-  get_cyl_cap(center, vecA, vecB, 0, patches[5]);
+  get_cyl_cap(center, vecA, vecB, false, patches[5]);
   
   //  2.  Compute surf_split1 and surf_split2.
   

@@ -8,11 +8,9 @@ static unsigned long PARTITION_ID_COUNT = 0;
 
 K_PARTITION :: K_PARTITION()
   : ID(PARTITION_ID_COUNT++),
-    from(0),
-    num_trim_curves(0),
-    trim_curves(0), adj_curves(0),
-    adj_surfs(0),
-    adj_partitions(0), rev_curves(0),
+    from(0), is_head(true),
+    num_trim_curves(0), trim_curves(0),
+    adj_curves(0), adj_surfs(0), adj_partitions(0), rev_curves(0),
     ref_count(0)
 { }
 
@@ -22,33 +20,47 @@ K_PARTITION :: K_PARTITION(K_PATCH* const p)
   unsigned long i;
   
   if (from = p)
-    from->ref_count++;
-  
-  if ((num_trim_curves = p->num_trim_curves) > 0)
   {
-    trim_curves    = new K_CURVE* [num_trim_curves];
-    adj_curves     = new long [num_trim_curves];
-    adj_surfs      = new K_SURF* [num_trim_curves];
-    adj_partitions = new K_PARTITION* [num_trim_curves];
-    rev_curves     = new int [num_trim_curves];
+    from->ref_count++;
+    is_head = from->is_head;
     
-    for (i = 0; i < num_trim_curves; i++)
+    if ((num_trim_curves = p->num_trim_curves) > 0)
     {
-      trim_curves[i]    = p->trim_curves[i];
-      trim_curves[i]->ref_count++;
-      adj_curves[i]     = i;
-      adj_surfs[i]      = 0;
-      adj_partitions[i] = 0;
-      rev_curves[i]     = 0;
+      trim_curves    = new K_CURVE* [num_trim_curves];
+      adj_curves     = new long [num_trim_curves];
+      adj_surfs      = new K_SURF* [num_trim_curves];
+      adj_partitions = new K_PARTITION* [num_trim_curves];
+      rev_curves     = new int [num_trim_curves];
+      
+      for (i = 0; i < num_trim_curves; i++)
+      {
+        trim_curves[i]    = p->trim_curves[i];
+        trim_curves[i]->ref_count++;
+        adj_curves[i]     = i;
+        adj_surfs[i]      = 0;
+        adj_partitions[i] = 0;
+        rev_curves[i]     = 0;
+      }
+    }
+    else  //  if (!num_trim_curves)
+    {
+      trim_curves    = 0;
+      adj_curves     = 0;
+      adj_surfs      = 0;
+      adj_partitions = 0;
+      rev_curves     = 0;
     }
   }
-  else  //  if (!num_trim_curves)
+  else  //  if (!from)
   {
-    trim_curves    = 0;
-    adj_curves     = 0;
-    adj_surfs      = 0;
-    adj_partitions = 0;
-    rev_curves     = 0;
+    is_head = true;
+    
+    num_trim_curves = 0;
+    trim_curves     = 0;
+    adj_curves      = 0;
+    adj_surfs       = 0;
+    adj_partitions  = 0;
+    rev_curves      = 0;
   }
   
   ref_count = 0;
@@ -61,6 +73,8 @@ K_PARTITION :: K_PARTITION(const K_PARTITION& p)
   
   if (from = p.from)
     from->ref_count++;
+  
+  is_head = p.is_head;
   
   if ((num_trim_curves = p.num_trim_curves) > 0)
   {
@@ -132,6 +146,8 @@ K_PARTITION& K_PARTITION :: operator =(const K_PARTITION& p)
     
     if (from = p.from)
       from->ref_count++;
+    
+    is_head = p.is_head;
     
     if ((num_trim_curves = p.num_trim_curves) > 0)
     {
@@ -215,11 +231,13 @@ ostream& operator <<(ostream& o, const K_PARTITION& p)
 
 unsigned long gen_partitions(K_PATCH* const patch, K_PARTITION**& partitions)
 {
+  assert(patch);
+  
   long           i, j, k;
   unsigned long  num_curves;
   K_POINT2D**    int_end_pts;
   long*          partitions_fw;
-  long*          partitions_rev;  
+  long*          partitions_rev;
   long**         list_trim;
   long**         list_int;
   unsigned long* num_curves_on_partition;
@@ -357,8 +375,9 @@ unsigned long gen_partitions(K_PATCH* const patch, K_PARTITION**& partitions)
       partitions[i] = new K_PARTITION;
       partitions[i]->ref_count++;
       
-      partitions[i]->from = patch;
+      partitions[i]->from    = patch;
       partitions[i]->from->ref_count++;
+      partitions[i]->is_head = patch->is_head;
       
       partitions[i]->num_trim_curves = 0;
       

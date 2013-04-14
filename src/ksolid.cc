@@ -13,6 +13,7 @@
 #include <gentor.h>
 #include <fpconversion.h>
 #include <cstring>
+#include <fstream>
 
 K_SOLID :: K_SOLID()
 {
@@ -162,7 +163,7 @@ int K_SOLID :: classify_pt(const bigrational& x,
   }
   
   //  For each direction,
-  //    count the number of patches a ray of the direction possibly hits.
+  //    count the number of patches POSSIBLY hit by a ray of the direction.
   
   for (i = 0; i < num_patches; i++)
   {
@@ -467,7 +468,7 @@ int K_SOLID :: classify_pt(const bigrational_vector& pt) const
   }
   
   //  For each direction,
-  //    count the number of patches a ray of the direction possibly hits.
+  //    count the number of patches POSSIBLY hit by a ray of the direction.
   
   for (i = 0; i < num_patches; i++)
   {
@@ -753,10 +754,15 @@ int K_SOLID :: classify_pt(const bigrational_vector& pt) const
   return location;
 }
 
+//K_SOLID gen_new_solid(K_PARTITION** partitions1,
+//                      const unsigned long num_partitions1,
+//                      K_PARTITION** partitions2,
+//                      const unsigned long num_partitions2)
 K_SOLID gen_new_solid(K_PARTITION** partitions1,
                       const unsigned long num_partitions1,
                       K_PARTITION** partitions2,
-                      const unsigned long num_partitions2)
+                      const unsigned long num_partitions2,
+                      const char op)
 {
   unsigned long i, j, k, l;
   K_PARTITION** new_partitions;
@@ -848,6 +854,11 @@ K_SOLID gen_new_solid(K_PARTITION** partitions1,
       }
   
   for (i = 0; i < num_partitions2; i++)
+  {
+    if (op == 'D')
+      new_partitions[i + num_partitions1]->is_head =
+        !new_partitions[i + num_partitions1]->is_head;
+    
     for (j = 0; j < partitions2[i]->num_trim_curves; j++)
       if (partitions2[i]->adj_partitions[j])
       {
@@ -915,6 +926,7 @@ K_SOLID gen_new_solid(K_PARTITION** partitions1,
         new_partitions[i + num_partitions1]->adj_curves[j]
           = k + num_partitions1;
       }
+  }
   
   for (i = 0; i < num_new_patches; i++)
   {
@@ -1299,8 +1311,11 @@ K_SOLID K_SOLID :: boolean(K_SOLID& s, const char op)
   cerr << " Build the resulting solid." << endl << flush;
   
   if (num_t_partitions > 0 && num_s_partitions > 0)
+//    r = gen_new_solid(t_new_partitions, num_t_new_partitions,
+//                      s_new_partitions, num_s_new_partitions);
     r = gen_new_solid(t_new_partitions, num_t_new_partitions,
-                      s_new_partitions, num_s_new_partitions);
+                      s_new_partitions, num_s_new_partitions,
+                      op);
   else if (num_t_partitions > 0)
     r = *this;
   else if (num_s_partitions > 0)
@@ -1355,7 +1370,6 @@ K_SOLID K_SOLID :: boolean(K_SOLID& s, const char op)
   return r;
 }
 
-#ifdef CCW_OUTPUT
 int K_SOLID :: Bezier_output(ostream& out_fs) const
 {
   unsigned long i;
@@ -1365,30 +1379,13 @@ int K_SOLID :: Bezier_output(ostream& out_fs) const
   for (i = 0; i < num_patches; i++)
   {
     out_fs << endl << flush;
-    patches[i]->Bezier_output(out_fs);
+    cerr << " K_SOLID :: Bezier_output: patch " << i << endl << flush;
+    patches[i]->Bezier_output(out_fs, 172, 172, 172);  //  color: grey
+//    patches[i]->Bezier_output(out_fs, 0, 127, 127);  //  color: green
   }
   
   return 0;
 }
-#else
-int K_SOLID :: Bezier_output(ostream& out_fs) const
-{
-  unsigned long i;
-  
-  out_fs << 2 * num_patches << endl << flush;
-  
-  for (i = 0; i < num_patches; i++)
-  {
-    out_fs << endl << flush;
-    patches[i]->Bezier_output(out_fs, 0);
-    //  Do this first s.t. trim_curves will be subdivided.
-    out_fs << endl << flush;
-    patches[i]->Bezier_output(out_fs, 1);
-  }
-  
-  return 0;
-}
-#endif
 
 K_SOLID read_solid(istream& in_fs, const bigrational& perturb_factor)
 {
@@ -1876,15 +1873,15 @@ K_SOLID read_CSG(const char* solid_info_dir_proto, const char* out_file_proto,
   
   in_fs.close();
   
-  if (out_file_proto)
-  {
-    strcpy(out_file, solid_info_dir_proto);
-    strcat(out_file, "/");
-    strcat(out_file, out_file_proto);
-    out_fs.open(out_file);
-    s3.Bezier_output(out_fs);
-    out_fs.close();
-  }
+//  if (out_file_proto)
+//  {
+//    strcpy(out_file, solid_info_dir_proto);
+//    strcat(out_file, "/");
+//    strcat(out_file, out_file_proto);
+//    out_fs.open(out_file);
+//    s3.Bezier_output(out_fs);
+//    out_fs.close();
+//  }
   
   return s3;
 }

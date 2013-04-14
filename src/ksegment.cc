@@ -13,67 +13,31 @@ K_SEGMENT :: K_SEGMENT()
   start = 0;
   end   = 0;
   
-  monotone = 0;
-  
   ref_count = 0;
 }
 
-////  K_SEGMENT :: K_SEGMENT(const K_POINT2D& x, const K_POINT2D& y)
-////    constructs a segment (x, y].
-//
-//K_SEGMENT :: K_SEGMENT(const K_POINT2D& x, const K_POINT2D& y)
-//{
-//  start = new K_POINT2D(x);
-//  start->ref_count++;
-//  end   = new K_POINT2D(y);
-//  end->ref_count++;
-//  
-//  monotone = 0;
-//  
-//  ref_count = 0;
-//}
+//  K_SEGMENT :: K_SEGMENT(const K_POINT2D& x, const K_POINT2D& y)
+//    constructs a segment (x, y].
 
-//  K_SEGMENT :: K_SEGMENT(const K_POINT2D& x, const K_POINT2D& y, const int m)
-//    constructs a segment (x, y] of monotonicity m.
-
-K_SEGMENT :: K_SEGMENT(const K_POINT2D& x, const K_POINT2D& y, const int m)
+K_SEGMENT :: K_SEGMENT(const K_POINT2D& x, const K_POINT2D& y)
 {
   start = new K_POINT2D(x);
   start->ref_count++;
   end   = new K_POINT2D(y);
   end->ref_count++;
   
-  monotone = m;
-  
   ref_count = 0;
 }
 
-////  K_SEGMENT :: K_SEGMENT(K_POINT2D* const x, K_POINT2D* const y)
-////    constructs a segment (*x, *y].
-//
-//K_SEGMENT :: K_SEGMENT(K_POINT2D* const x, K_POINT2D* const y)
-//{
-//  start = x;
-//  start->ref_count++;
-//  end   = y;
-//  end->ref_count++;
-//  
-//  monotone = 0;
-//  
-//  ref_count = 0;
-//}
+//  K_SEGMENT :: K_SEGMENT(K_POINT2D* const x, K_POINT2D* const y)
+//    constructs a segment (x, y].
 
-//  K_SEGMENT :: K_SEGMENT(K_POINT2D* const x, K_POINT2D* const y, const int m)
-//    constructs a segment (x, y] of monotonicity m.
-
-K_SEGMENT :: K_SEGMENT(K_POINT2D* const x, K_POINT2D* const y, const int m)
+K_SEGMENT :: K_SEGMENT(K_POINT2D* const x, K_POINT2D* const y)
 {
   start = x;
   start->ref_count++;
   end   = y;
   end->ref_count++;
-  
-  monotone = m;
   
   ref_count = 0;
 }
@@ -87,8 +51,6 @@ K_SEGMENT :: K_SEGMENT(const K_SEGMENT& s)
   start->ref_count++;
   end   = s.end;
   end->ref_count++;
-  
-  monotone = s.monotone;
   
   ref_count = 0;
 }
@@ -111,8 +73,6 @@ K_SEGMENT& K_SEGMENT :: operator =(const K_SEGMENT& s)
     
     if (end = s.end)
       end->ref_count++;
-    
-    monotone = s.monotone;
   }
   
   return *this;
@@ -157,8 +117,6 @@ K_SEGMENT K_SEGMENT :: reverse() const
   
   if (s.end = start)
     s.end->ref_count++;
-  
-  s.monotone = monotone;
   
   return s;
 }

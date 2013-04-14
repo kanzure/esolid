@@ -1,6 +1,8 @@
 //  file:    kpatch.cc
 //  update:  11/18/02
 
+#include <iomanip>
+
 #include <config.h>
 
 #include <kpatch.h>
@@ -9,23 +11,38 @@
 static unsigned long PATCH_ID_COUNT = 0;
 static PT_SURF_ASSOC pt_surf_assoc;
 
+//  K_PATCH :: K_PATCH()
+//    constructs an empty patch
+
 K_PATCH :: K_PATCH()
   : ID(PATCH_ID_COUNT++),
-    surf(0), low_s(0), high_s(0), low_t(0), high_t(0),
+    surf(0), is_head(true), low_s(0), high_s(0), low_t(0), high_t(0),
     num_trim_curves(0), trim_curves(0), adj_surfs(0), adj_patches(0),
     num_int_curves(0), int_curves(0), adj_int_surfs(0), adj_int_patches(0),
     num_merged(0), ic(0), len_ic(0), ic_closed(0),
     ref_count(0)
 { }
 
+////  K_PATCH :: K_PATCH(K_SURF* const s,
+////                     K_CURVE* const t[], const unsigned long n)
+//  K_PATCH :: K_PATCH(K_SURF* const s,
+//                     K_CURVE* const t[], const unsigned long n,
+//                     const bool h)
+//    constructs an instance with surf s
+//                            and trim_curves t[0], t[1], ..., t[n - 1].
+
+//K_PATCH :: K_PATCH(K_SURF* const s,
+//                   K_CURVE* const t[], const unsigned long n)
 K_PATCH :: K_PATCH(K_SURF* const s,
-                   K_CURVE* const t[], const unsigned long n)
+                   K_CURVE* const t[], const unsigned long n,
+                   const bool h)
   : ID(PATCH_ID_COUNT++)
 {
   unsigned long i, j;
   
-  surf = s;
+  surf    = s;
   surf->ref_count++;
+  is_head = h;
   
   if ((num_trim_curves = n) > 0)
   {
@@ -63,13 +80,17 @@ K_PATCH :: K_PATCH(K_SURF* const s,
   ref_count = 0;
 }
 
+//  K_PATCH :: K_PATCH(const K_PARTITION& p)
+//    constructs an instance with a partition p.
+
 K_PATCH :: K_PATCH(const K_PARTITION& p)
   : ID(PATCH_ID_COUNT++)
 {
   unsigned long i;
   
-  surf = p.from->surf;
+  surf    = p.from->surf;
   surf->ref_count++;
+  is_head = p.is_head;
   
   if ((num_trim_curves = p.num_trim_curves) > 0)
   {
@@ -113,17 +134,21 @@ K_PATCH :: K_PATCH(const K_PARTITION& p)
   ref_count = 0;
 }
 
+//  K_PATCH :: K_PATCH(const K_PATCH& p)
+//    the copy constructor
+
 K_PATCH :: K_PATCH(const K_PATCH& p)
   : ID(PATCH_ID_COUNT++)
 {
   unsigned long i, j;
   
-  surf   = p.surf;
+  surf    = p.surf;
   surf->ref_count++;
-  low_s  = p.low_s;
-  high_s = p.high_s;
-  low_t  = p.low_t;
-  high_t = p.high_t;
+  is_head = p.is_head;
+  low_s   = p.low_s;
+  high_s  = p.high_s;
+  low_t   = p.low_t;
+  high_t  = p.high_t;
   
   if ((num_trim_curves = p.num_trim_curves) > 0)
   {
@@ -207,6 +232,9 @@ K_PATCH :: K_PATCH(const K_PATCH& p)
   ref_count = 0;
 }
 
+//  K_PATCH& K_PATCH :: operator =(const K_PATCH& p)
+//    the assignment operator
+
 K_PATCH& K_PATCH :: operator =(const K_PATCH& p)
 {
   if (this != &p)
@@ -271,12 +299,13 @@ K_PATCH& K_PATCH :: operator =(const K_PATCH& p)
       delete [] ic_closed;
     }
     
-    surf   = p.surf;
+    surf    = p.surf;
     surf->ref_count++;
-    low_s  = p.low_s;
-    high_s = p.high_s;
-    low_t  = p.low_t;
-    high_t = p.high_t;
+    is_head = p.is_head;
+    low_s   = p.low_s;
+    high_s  = p.high_s;
+    low_t   = p.low_t;
+    high_t  = p.high_t;
     
     if ((num_trim_curves = p.num_trim_curves) > 0)
     {
@@ -360,6 +389,9 @@ K_PATCH& K_PATCH :: operator =(const K_PATCH& p)
   
   return *this;
 }
+
+//  K_PATCH :: ~K_PATCH()
+//    the destructor
 
 K_PATCH :: ~K_PATCH()
 {
@@ -449,6 +481,9 @@ ostream& operator <<(ostream& o, const K_PATCH& p)
 {
   return p.output(o);
 }
+
+//  int K_PATCH :: set_range()
+//    sets low_s, high_s, low_t and high_t.
 
 int K_PATCH :: set_range()
 {
@@ -4918,189 +4953,785 @@ unsigned long K_PATCH :: split_loops(K_PATCH**& new_patches)
   return num_new_patches;
 }
 
-#define MAX_NUM_SEGMENTS 1024
+#define MAX_NUM_INT_PTS 128
 
-#ifdef CCW_OUTPUT
-int K_PATCH :: Bezier_output(ostream& out_fs, const int is_fw0) const
+K_POINT2D K_PATCH :: get_pt_in() const
 {
-  unsigned long i, j;
-  unsigned long num_segments;
-  double*       a[MAX_NUM_SEGMENTS];
-  double        max_a_s, min_a_s, max_a_t;
-  unsigned long max_s_segment, min_s_segment, max_t_segment;
-  int           is_fw;
-  double        d_l[2], d_h[2];
+  assert(num_trim_curves > 0);
   
-  surf->Bezier_output(out_fs, low_s, high_s, low_t, high_t);
+  unsigned long i, j, k;
+  K_BOXCO2      b;
+  bigrational   low_t, high_t, cut_t;
+  K_RATPOLY     poly_cut;
+  K_POINT2D**   int_pts_proto;
+  unsigned long num_int_pts_proto;
+  K_POINT2D**   int_pts;
+  unsigned long num_int_pts;
+  bigrational   v_s;
   
-//  out_fs << "172  172  172" << endl << flush;  //  color: grey
-  out_fs << "0  127  127" << endl << flush;  //  color: green
-  out_fs << "1" << endl << flush;              //  num_trim_loops: 1
+  b      = trim_curves[0]->bbox();
+  low_t  = b.low[1];
+  high_t = b.high[1];
   
-  for (i = 0; i < MAX_NUM_SEGMENTS; i++)
-    a[i] = new double [2];
+  for (i = 1; i < num_trim_curves; i++)
+  {
+    b = trim_curves[i]->bbox();
+    
+    if (b.low[1] < low_t)
+      low_t = b.low[1];
+    
+    if (b.high[1] > high_t)
+      high_t = b.high[1];
+  }
   
-  max_a_s       = - 1.0;
-  min_a_s       = 10.0;
-  max_a_t       = - 1.0;
-  max_s_segment = min_s_segment = max_t_segment = 0;
-  num_segments  = 0;
+  cut_t       = low_t + 3 * (high_t - low_t) / 7;
+  poly_cut    = K_RATPOLY(2, 1, cut_t);
+  int_pts     = new K_POINT2D* [MAX_NUM_INT_PTS];
+  num_int_pts = 0;
   
   for (i = 0; i < num_trim_curves; i++)
   {
-    for (j = 0; j < 2; j++)
-      trim_curves[i]->sub_divide(10, j);
-    
-    for (j = 0; j < trim_curves[i]->num_segments; j++)
+    if (num_int_pts_proto =
+        trim_curves[i]->find_intersections(poly_cut, int_pts_proto, 1) > 0)
     {
-      assert(num_segments < MAX_NUM_SEGMENTS);
-      trim_curves[i]->segments[j]->start->get_fp_approx(a[num_segments]);
-      
-      if (a[num_segments][0] > max_a_s)
+      for (j = 0; j < num_int_pts_proto; j++)
       {
-        max_a_s       = a[num_segments][0];
-        max_t_segment = num_segments;
+        assert(num_int_pts < MAX_NUM_INT_PTS);
+        int_pts[num_int_pts] = int_pts_proto[j];
+        int_pts[num_int_pts]->ref_count++;
+        num_int_pts++;
       }
       
-      if (a[num_segments][0] < min_a_s)
-      {
-        min_a_s       = a[num_segments][0];
-        min_s_segment = num_segments;
-      }
+      for (j = 0; j < num_int_pts_proto; j++)
+        if (!--int_pts_proto[j]->ref_count)
+          delete int_pts_proto[j];
       
-      if (a[num_segments][1] > max_a_t)
-      {
-        max_a_t       = a[num_segments][1];
-        max_t_segment = num_segments;
-      }
-      
-      num_segments++;
-    }   
+      delete [] int_pts_proto;
+    }
   }
   
-  assert(num_segments < MAX_NUM_SEGMENTS);
-  trim_curves[0]->start()->get_fp_approx(a[num_segments]);
+  assert(num_int_pts >= 2);
   
-  assert(max_s_segment != min_s_segment
-         &&
-         max_s_segment != max_t_segment
-         &&
-         min_s_segment != max_t_segment);
+  sort_s(int_pts, num_int_pts);
+  v_s = (int_pts[0]->get_high_s() + int_pts[1]->get_low_s()) / 2;
   
-  //  Orient CCW s.t. we visit segments in the following order:
-  //    max_s_segment => max_t_segment => min_s_segment
+  for (i = 0; i < num_int_pts; i++)
+    if (!--int_pts[i]->ref_count)
+      delete int_pts[i];
   
-  if (max_t_segment > max_s_segment)
-    if (max_s_segment > min_s_segment || min_s_segment > max_t_segment)
-      is_fw = 1;
-    else
-      is_fw = 0;
-  else  //  if (max_s_segment > max_t_segment)
-    if (max_t_segment > min_s_segment || min_s_segment > max_s_segment)
-      is_fw = 1;
-    else
-      is_fw = 0;
+  delete [] int_pts;
   
-  d_l[0] = low_s.as_double();
-  d_h[0] = high_s.as_double();
-  d_l[1] = low_t.as_double();
-  d_h[1] = high_t.as_double();
-  
-  for (i = 0; i < num_segments + 1; i++)
-    for (j = 0; j < 2; j++)
-      a[i][j] = (a[i][j] - d_l[j]) / (d_h[j] - d_l[j]);
-  
-  out_fs << num_segments << endl << flush;
-  
-  if (is_fw)
-    for (i = 0; i < num_segments; i++)
-    {
-      out_fs << "-1  -1  1  1" << endl << flush;
-      out_fs << a[i][0] << "  " << a[i][1] << endl << flush;
-      out_fs << a[i + 1][0] << "  " << a[i + 1][1] << endl << flush;
-    }
-  else  //  if (!is_fw)
-    for (i = num_segments; i > 0; i--)
-    {
-      out_fs << "-1  -1  1  1" << endl << flush;
-      out_fs << a[i][0] << "  " << a[i][1] << endl << flush;
-      out_fs << a[i - 1][0] << "  " << a[i - 1][1] << endl << flush;
-    }
-  
-  for (i = 0; i < MAX_NUM_SEGMENTS; i++)
-    delete [] a[i];
-  
-  return 0;
+  return K_POINT2D(v_s, cut_t);
 }
-#else
-int K_PATCH :: Bezier_output(ostream& out_fs, const int is_fw0) const
+
+//  double sgn_area(double* const x, double* const y, double* const z)
+//    return the signed area of the triangle xyz.
+//           >  0.0 if z is left of x -> y
+//           <  0.0 if z is right of x -> y
+//           == 0.0 if x, y and z are collinear or inaccurate.
+
+double sgn_area(double* const x, double* const y, double* const z)
 {
-  unsigned long i, j;
-  unsigned long num_segments;
-  double*       a[MAX_NUM_SEGMENTS];
-  int           is_fw;
-  double        d_l[2], d_h[2];
+  return (y[0] - x[0]) * (z[1] - x[1]) -  (z[0] - x[0]) * (y[1] - x[1]);
+}
+
+//  double dist(double* const x, double* const y)
+//    return Euclidean distance between x & y.
+
+double dist(double* const x, double* const y)
+{
+  return sqrt((y[0] - x[0]) * (y[0] - x[0]) + (y[1] - x[1]) * (y[1] - x[1]));
+}
+
+//  int K_PATCH :: Bezier_output(ostream& out_fs,
+//                               const unsigned int r,
+//                               const unsigned int g,
+//                               const unsigned int b) const
+//    compute Bezier patch representation of *this.
+//    control points are ordered s.t.
+//      if the thumb         of our right hand goes l_s -> h_s and
+//         the forefinger                           l_t -> h_t then
+//         the middle finger                   is the normal to the surface.
+
+int K_PATCH :: Bezier_output(ostream& out_fs,
+                             const unsigned int r,
+                             const unsigned int g,
+                             const unsigned int b) const
+{
+  assert(num_trim_curves > 0);
   
-  surf->Bezier_output(out_fs, low_s, high_s, low_t, high_t);
+  unsigned long   i, j, k, l, m;
+  unsigned long   num_total_segments;
+  K_CURVE**       pwl_curves;
+  K_BOXCO2*       pwl_curve_bboxes;
+  K_SEGMENT**     pwl_segments;
+  K_POINT2D*      segment_end;
+  bigrational     val_cut;
+  unsigned long   num_cut_pts;
+  K_POINT2D**     cut_pts;
+  unsigned long   num_endpts_proto;
+  double**        endpts;
+  double          ext[4];
+  unsigned long   idx_ext[4];
+  double          sa[4];
+  double          max_aa, aa;
+  unsigned long   idx_max_aa;
+  bool            is_ccw;
+  double          low_pt[2], high_pt[2];
+  unsigned long*  num_total_cut_pts_proto;
+  K_POINT2D***    total_cut_pts;
+  unsigned long*  num_total_cut_pts;
+  double          max_len_segment, len_segment;
+  unsigned long   max_num_cut, num_cut;
+  unsigned long   num_endpts;
+  unsigned long   deg_segment;
+  K_BOXCO2*       segment_ibox;
+  bigrational     val_start[2];
+  bigrational     val_end[2];
+  bigrational     val_width[2];
+  bigrational     val_low[2];
+  bigrational     val_high[2];
+  unsigned long   axis_cut;
+  bigrational     val_step;
+  K_RATPOLY       dummy;
+  double          max_len_bump;
+  unsigned long   num_trim_ctrl_pts;
+  double**        trim_ctrl_pts;
   
-//  out_fs << "172  172  172" << endl << flush;  //  color: grey
-  out_fs << "0  127  127" << endl << flush;  //  color: green
-  out_fs << "1" << endl << flush;              //  num_trim_loops: 1
+  cerr << " K_PATCH :: Bezier_output: num_trim_curves = " << num_trim_curves << endl << flush;
   
-  is_fw = is_fw0;
-  
-  for (i = 0; i < MAX_NUM_SEGMENTS; i++)
-    a[i] = new double [2];
-  
-  num_segments = 0;
+  pwl_curves = new K_CURVE* [num_trim_curves];
   
   for (i = 0; i < num_trim_curves; i++)
   {
-    if (!is_fw)  //  s.t. sub_divide won't be applied twice.
-      for (j = 0; j < 2; j++)
-        trim_curves[i]->sub_divide(10, j);
+    pwl_segments = new K_SEGMENT* [trim_curves[i]->num_segments];
     
     for (j = 0; j < trim_curves[i]->num_segments; j++)
     {
-      assert(num_segments < MAX_NUM_SEGMENTS);
-      trim_curves[i]->segments[j]->start->get_fp_approx(a[num_segments]);
-      num_segments++;
-    }   
+      pwl_segments[j] = new K_SEGMENT(trim_curves[i]->segments[j]->start,
+                                      trim_curves[i]->segments[j]->end);
+      pwl_segments[j]->ref_count++;
+    }
+    
+    pwl_curves[i] = new K_CURVE(trim_curves[i]->poly,
+                                pwl_segments, trim_curves[i]->num_segments);
+    pwl_curves[i]->ref_count++;
+    
+    for (j = 0; j < trim_curves[i]->num_segments; j++)
+      if (!--pwl_segments[j]->ref_count)
+        delete pwl_segments[j];
+    
+    delete [] pwl_segments;
   }
   
-  assert(num_segments < MAX_NUM_SEGMENTS);
-  trim_curves[0]->start()->get_fp_approx(a[num_segments]);
+  for (i = num_total_segments = 0; i < num_trim_curves; i++)
+    num_total_segments += pwl_curves[i]->num_segments;
   
-  d_l[0] = low_s.as_double();
-  d_h[0] = high_s.as_double();
-  d_l[1] = low_t.as_double();
-  d_h[1] = high_t.as_double();
+  cerr << " K_PATCH :: Bezier_output: num_total_segments = " << num_total_segments << endl << flush;
   
-  for (i = 0; i < num_segments + 1; i++)
+  if (num_total_segments < 3)
+  {
+    for (i = 0; i < num_trim_curves; i++)
+      pwl_curves[i]->subdivide(pwl_curves[i]->poly->get_total_deg());
+    
+    for (i = num_total_segments = 0; i < num_trim_curves; i++)
+      num_total_segments += pwl_curves[i]->num_segments;
+    
+    cerr << " K_PATCH :: Bezier_output: num_total_segments = " << num_total_segments << endl << flush;
+  }
+//    return 0;
+  
+  //  subdivide segments of trim curves and store their endpoints.
+  //  see whether or not endpts are sorted ccw on the head of *this.
+  
+  num_total_cut_pts_proto = new unsigned long [num_trim_curves];
+  total_cut_pts           = new K_POINT2D** [num_trim_curves];
+  num_total_cut_pts       = new unsigned long [num_trim_curves];
+  
+  for (i = 0; i < num_trim_curves; i++)
+  {
+    num_total_cut_pts_proto[i] = 0;
+    
+    for (k = 0; k < num_trim_curves; k++)
+      if (k != i)
+        num_total_cut_pts_proto[i] += 2 * pwl_curves[k]->num_segments * pwl_curves[i]->poly->get_total_deg();
+    
+    total_cut_pts[i]     = new K_POINT2D* [num_total_cut_pts_proto[i]];
+    num_total_cut_pts[i] = 0;
+  }
+  
+  for (i = 0; i < num_trim_curves; i++)
+    for (j = 0; j < num_trim_curves; j++)
+      if (i != j  && pwl_curves[i]->bbox().overlap(pwl_curves[j]->bbox()))
+      {
+//        cerr << " K_PATCH :: Bezier_output: bboxes of trim_curves[" << i << "] and trim_curves[" << j << "] overlap " << endl << flush;
+        
+        for (k = 0; k < pwl_curves[j]->num_segments; k++)
+        {
+//          cerr << " K_PATCH :: Bezier_output: cutting trim_curves[" << i << "] by trim_curves[" << j << "]->segments[" << k << "] " << endl << flush;
+          
+          segment_end = pwl_curves[j]->segments[k]->end;
+          
+          val_cut     =
+            (segment_end->get_low_s() + segment_end->get_high_s()) / 2;
+          num_cut_pts =
+            pwl_curves[i]->find_intersections(K_RATPOLY(2, 0, val_cut),
+                                              cut_pts,
+                                              0);
+//          cerr << " K_PATCH :: Bezier_output: num_cut_pts = " << num_cut_pts << endl << flush;
+          
+          for (l = 0; l < num_cut_pts; l++)
+          {
+            total_cut_pts[i][num_total_cut_pts[i]] = cut_pts[l];
+            total_cut_pts[i][num_total_cut_pts[i]]->ref_count++;
+            num_total_cut_pts[i]++;
+          }
+          
+//          cerr << " K_PATCH :: Bezier_output: num_total_cut_pts[" << i << "] = " << num_total_cut_pts[i] << ", num_total_cut_pts_proto[" << i << "] = " << num_total_cut_pts_proto[i] << endl << flush;
+          assert(num_total_cut_pts[i] <= num_total_cut_pts_proto[i]);
+          
+          for (l = 0; l < num_cut_pts; l++)
+            if (!--cut_pts[l]->ref_count)
+              delete cut_pts[l];
+          
+          if (num_cut_pts > 0)
+            delete [] cut_pts;
+          
+          val_cut     =
+            (segment_end->get_low_t() + segment_end->get_high_t()) / 2;
+          num_cut_pts =
+            pwl_curves[i]->find_intersections(K_RATPOLY(2, 1, val_cut),
+                                              cut_pts,
+                                              0);
+//          cerr << " K_PATCH :: Bezier_output: num_cut_pts = " << num_cut_pts << endl << flush;
+          
+          for (l = 0; l < num_cut_pts; l++)
+          {
+            total_cut_pts[i][num_total_cut_pts[i]] = cut_pts[l];
+            total_cut_pts[i][num_total_cut_pts[i]]->ref_count++;
+            num_total_cut_pts[i]++;
+          }
+          
+//          cerr << " K_PATCH :: Bezier_output: k = " << k << ", num_total_cut_pts[" << i << "] = " << num_total_cut_pts[i] << ", num_total_cut_pts_proto[" << i << "] = " << num_total_cut_pts_proto[i] << endl << flush;
+          assert(num_total_cut_pts[i] <= num_total_cut_pts_proto[i]);
+          
+          for (l = 0; l < num_cut_pts; l++)
+            if (!--cut_pts[l]->ref_count)
+              delete cut_pts[l];
+          
+          if (num_cut_pts > 0)
+            delete [] cut_pts;
+        }
+        
+//        cerr << " K_PATCH :: Bezier_output: j = " << j << ", num_total_cut_pts[" << i << "] = " << num_total_cut_pts[i] << ", num_total_cut_pts_proto[" << i << "] = " << num_total_cut_pts_proto[i] << endl << flush;
+      }
+//      else
+//      {
+//        cerr << " K_PATCH :: Bezier_output: bboxes of trim_curves[" << i << "] and trim_curves[" << j << "] do not overlap " << endl << flush;
+//        cerr << " K_PATCH :: Bezier_output: j = " << j << ", num_total_cut_pts[" << i << "] = " << num_total_cut_pts[i] << ", num_total_cut_pts_proto[" << i << "] = " << num_total_cut_pts_proto[i] << endl << flush;
+//      }
+  
+  for (i = 0; i < num_trim_curves; i++)
+    for (j = 0; j < num_total_cut_pts[i]; j++)
+      pwl_curves[i]->add_pt(total_cut_pts[i][j]);
+  
+  for (i = 0; i < num_trim_curves; i++)
+  {
+    for (j = 0; j < num_total_cut_pts[i]; j++)
+      if (!--total_cut_pts[i][j]->ref_count)
+        delete total_cut_pts[i][j];
+    
+    if (num_total_cut_pts_proto[i] > 0)
+      delete [] total_cut_pts[i];
+  }
+  
+  delete [] num_total_cut_pts_proto;
+  delete [] total_cut_pts;
+  delete [] num_total_cut_pts;
+  
+  for (i = 0, num_endpts_proto = 1; i < num_trim_curves; i++)
+    num_endpts_proto += pwl_curves[i]->num_segments;
+  
+//  cerr << " K_PATCH :: Bezier_output: num_endpts_proto = " << num_endpts_proto << endl << flush;
+  
+  endpts = new double* [num_endpts_proto + 1];
+  
+  for (i = 0; i < num_endpts_proto + 1; i++)
+    endpts[i] = new double [2];
+  
+  pwl_curves[num_trim_curves - 1]->end()->get_fp_approx(endpts[0]);
+  ext[0] = ext[1] = endpts[idx_ext[0] = idx_ext[1] = 0][0];
+  ext[2] = ext[3] = endpts[idx_ext[2] = idx_ext[3] = 0][1];
+  
+  for (i = 0, k = 1; i < num_trim_curves; i++)
+    for (j = 0; j < pwl_curves[i]->num_segments; j++)
+    {
+      pwl_curves[i]->segments[j]->end->get_fp_approx(endpts[k]);
+      
+      if (endpts[k][0] <= ext[0])
+        ext[0] = endpts[idx_ext[0] = k][0];
+      
+      if (endpts[k][0] >= ext[1])
+        ext[1] = endpts[idx_ext[1] = k][0];
+      
+      if (endpts[k][1] <= ext[2])
+        ext[2] = endpts[idx_ext[2] = k][1];
+      
+      if (endpts[k][1] >= ext[3])
+        ext[3] = endpts[idx_ext[3] = k][1];
+      
+      k++;
+    }
+  
+  assert(k == num_endpts_proto);
+  pwl_curves[0]->segments[0]->end->get_fp_approx(endpts[num_endpts_proto]);
+  
+//  for (i = 0; i < num_endpts_proto; i++)
+//    cerr << " K_PATCH :: Bezier_output: endpts_proto[" << i << "] = ( " << endpts[i][0] << ",  " << endpts[i][1] << " )" << endl << flush;
+//  cerr << endl << flush;
+//  cerr << " K_PATCH :: Bezier_output: idx_min_s = " << idx_ext[0] << ", idx_max_s = " << idx_ext[1] << ", idx_min_t = " << idx_ext[2] << ", idx_max_t = " << idx_ext[3] << endl << flush;
+  
+  assert(idx_ext[0] != idx_ext[1]);
+  assert(idx_ext[2] != idx_ext[3]);
+  
+  if (idx_ext[0] == num_endpts_proto - 1)
+  {
+//    cerr << " K_PATCH :: Bezier_output: idx_min_s may have to be shifted. " << endl << flush;
+    
+    k = 1;
+    
+    while (endpts[k][0] == ext[0])
+      idx_ext[0] = k++;
+  }
+  else if (idx_ext[1] == num_endpts_proto - 1)
+  {
+//    cerr << " K_PATCH :: Bezier_output: idx_max_s may have to be shifted. " << endl << flush;
+    
+    k = 1;
+    
+    while (endpts[k][0] == ext[1])
+      idx_ext[1] = k++;
+  }
+  
+  if (idx_ext[2] == num_endpts_proto - 1)
+  {
+//    cerr << " K_PATCH :: Bezier_output: idx_min_t may have to be shifted. " << endl << flush;
+    
+    k = 1;
+    
+    while (endpts[k][1] == ext[2])
+      idx_ext[2] = k++;
+  }
+  else if (idx_ext[3] == num_endpts_proto - 1)
+  {
+//    cerr << " K_PATCH :: Bezier_output: idx_max_t may have to be shifted. " << endl << flush;
+    
+    k = 1;
+    
+    while (endpts[k][1] == ext[3])
+      idx_ext[3] = k++;
+  }
+  
+//  cerr << " K_PATCH :: Bezier_output: idx_min_s = " << idx_ext[0] << ", idx_max_s = " << idx_ext[1] << ", idx_min_t = " << idx_ext[2] << ", idx_max_t = " << idx_ext[3] << endl << flush;
+  
+  assert(idx_ext[0] != idx_ext[1]);
+  assert(idx_ext[2] != idx_ext[3]);
+  
+  for (i = 0, max_aa = 0.0, idx_max_aa = 4; i < 4; i++)
+  {
+    sa[i] = sgn_area(endpts[idx_ext[i] - 1],
+                     endpts[idx_ext[i] + 1],
+                     endpts[idx_ext[i]]);
+    aa    = fabs(sa[i]);
+    
+    if (aa > max_aa)
+    {
+      max_aa     = aa;
+      idx_max_aa = i;
+    }
+    
+//    cerr << " K_PATCH :: Bezier_output: sa[" << i << "] = " << sa[i] << ", max_aa = " << max_aa << endl << flush;
+  }
+  
+//  cerr << " K_PATCH :: Bezier_output: idx_max_aa = " << idx_max_aa << endl << flush;
+  assert(idx_max_aa < 4);  //  => sa[idx_max_aa] != 0.0
+  
+  if (sa[idx_max_aa] < 0.0)       //  if x is right of x-1 -> x+1
+    is_ccw = true;
+  else  //  if x is left of x-1 -> x+1
+    is_ccw = false;
+  
+  cerr << " K_PATCH :: Bezier_output: is_ccw = " << is_ccw << ", is_head = " << is_head << endl << flush;
+  
+  //  reorder endpts.
+  
+  if (is_head)
+    if (is_ccw)
+    {
+      low_pt[0]  = low_s.as_double();
+      high_pt[0] = high_s.as_double();
+    }
+    else  //  if (!is_ccw)
+    {
+      low_pt[0]  = high_s.as_double();
+      high_pt[0] = low_s.as_double();
+    }
+  else  //  if (!is_head)
+    if (is_ccw)
+    {
+      low_pt[0]  = high_s.as_double();
+      high_pt[0] = low_s.as_double();
+    }
+    else  //  if (!is_ccw)
+    {
+      low_pt[0]  = low_s.as_double();
+      high_pt[0] = high_s.as_double();
+    }
+  
+  low_pt[1]  = low_t.as_double();
+  high_pt[1] = high_t.as_double();
+  
+  for (i = 0; i < num_endpts_proto; i++)
     for (j = 0; j < 2; j++)
-      a[i][j] = (a[i][j] - d_l[j]) / (d_h[j] - d_l[j]);
+      endpts[i][j] = (endpts[i][j] - low_pt[j]) / (high_pt[j] - low_pt[j]);
   
-  out_fs << num_segments << endl << flush;
+//  for (i = 0; i < num_endpts_proto; i++)
+//    cerr << " K_PATCH :: Bezier_output: endpts[" << i << "] = ( " << endpts[i][0] << ",  " << endpts[i][1] << " )" << endl << flush;
+//  cerr << endl << flush;
   
-  if (is_fw)
-    for (i = 0; i < num_segments; i++)
+  //  subdivide long segments.
+  
+  max_len_segment   = .2;
+  max_num_cut       = (unsigned long)ceil(2.0 / max_len_segment);
+//  cerr << " K_PATCH :: Bezier_output: max_len_segment = " << max_len_segment << ", max_num_cut = " << max_num_cut << endl << flush;
+  assert(max_num_cut > 0);
+  
+  num_total_cut_pts_proto = new unsigned long [num_trim_curves];
+  total_cut_pts           = new K_POINT2D** [num_trim_curves];
+  num_total_cut_pts       = new unsigned long [num_trim_curves];
+  
+  for (i = k = 0; i < num_trim_curves; i++)
+  {
+    deg_segment                = pwl_curves[i]->poly->get_total_deg();
+    num_total_cut_pts_proto[i] =
+      max_num_cut * deg_segment * pwl_curves[i]->num_segments;
+    total_cut_pts[i]           = new K_POINT2D* [num_total_cut_pts_proto[i]];
+    num_total_cut_pts[i]       = 0;
+//    cerr << " K_PATCH :: Bezier_output: deg_segment = " << deg_segment << ", pwl_curves[" << i << "]->num_segments = " << pwl_curves[i]->num_segments << ", num_total_cut_pts_proto[" << i << "] = " << num_total_cut_pts_proto[i] << endl << flush;
+    
+    for (j = 0; j < pwl_curves[i]->num_segments; j++)
     {
-      out_fs << "-1 -1 1 1" << endl << flush;
-      out_fs << a[i][0] << " " << a[i][1] << endl << flush;
-      out_fs << a[i + 1][0] << " " << a[i + 1][1] << endl << flush;
+      len_segment = dist(endpts[k], endpts[k + 1]);
+//      cerr << " K_PATCH :: Bezier_output: dist( endpts[" << k << "], endpts[" << k + 1 << "] ) = " << len_segment << endl << flush;
+      
+      if (len_segment > max_len_segment)
+      {
+//        cerr << " K_PATCH :: Bezier_output: pwl_curves[" << i << "]->segments[" << j << "] is long. " << endl << flush;
+//        cerr << " K_PATCH :: Bezier_output: endpts[" << k << "] = ( " << endpts[k][0] << ",  " << endpts[k][1] << " )" << endl << flush;
+//        cerr << " K_PATCH :: Bezier_output: endpts[" << k + 1 << "] = ( " << endpts[k + 1][0] << ",  " << endpts[k + 1][1] << " )" << endl << flush;
+        
+        segment_end  = pwl_curves[i]->segments[j]->start;
+        val_start[0] =
+          (segment_end->get_low_s() + segment_end->get_high_s()) / 2;
+        val_start[1] =
+          (segment_end->get_low_t() + segment_end->get_high_t()) / 2;
+        segment_end  = pwl_curves[i]->segments[j]->end;
+        val_end[0]   =
+          (segment_end->get_low_s() + segment_end->get_high_s()) / 2;
+        val_end[1]   =
+          (segment_end->get_low_t() + segment_end->get_high_t()) / 2;
+//        cerr << " K_PATCH :: Bezier_output: val_start = ( " << val_start[0] << ",  " << val_start[1] << " )" << endl << flush;
+//        cerr << " K_PATCH :: Bezier_output: val_end   = ( " << val_end[0] << ",  " << val_end[1] << " )" << endl << flush;
+        
+        for (l = 0; l < 2; l++)
+          if (val_start[l] > val_end[l])
+          {
+            val_width[l] = val_start[l] - val_end[l];
+            val_low[l]   = val_end[l];
+            val_high[l]  = val_start[l];
+          }
+          else  //  if (val_start[l] <= val_end[l])
+          {
+            val_width[l] = val_end[l] - val_start[l];
+            val_low[l]   = val_start[l];
+            val_high[l]  = val_end[l];
+          }
+        
+        if (val_width[0] > val_width[1])
+          axis_cut = 0;
+        else if (val_width[1] > 0)
+          axis_cut = 1;
+        else
+        {
+          cerr << "   Degeneracy detected. " << endl << flush;
+          abort();
+        }
+        
+        num_cut  = (unsigned long)ceil(len_segment / max_len_segment);
+//        cerr << " K_PATCH :: Bezier_output: num_cut = " << num_cut << endl << flush;
+        assert(num_cut <= max_num_cut);
+        val_step = val_width[axis_cut] / (num_cut + 1);
+        val_cut  = val_low[axis_cut];
+        
+        for (l = 0; l < num_cut; l++)
+        {
+          val_cut += val_step;
+          
+          if (axis_cut == 0)
+            num_cut_pts =
+              get_pts_proto(val_cut,
+                            val_low[1], val_high[1],
+                            pwl_curves[i]->poly->subst_val(0, val_cut),
+                            dummy, dummy,
+                            cut_pts,
+                            init_tol, 1);
+          else  //  if (axis_cut == 1)
+            num_cut_pts =
+              get_pts_proto(val_low[0], val_high[0],
+                            pwl_curves[i]->poly->subst_val(1, val_cut),
+                            val_cut,
+                            dummy, dummy,
+                            cut_pts,
+                            init_tol, 1);
+          
+//          cerr << " K_PATCH :: Bezier_output: num_cut_pts = " << num_cut_pts << ", deg_segment = " << deg_segment << endl << flush;
+          assert(num_cut_pts <= max_num_cut * deg_segment);
+          
+          for (m = 0; m < num_cut_pts; m++)
+          {
+            total_cut_pts[i][num_total_cut_pts[i]] = cut_pts[m];
+            total_cut_pts[i][num_total_cut_pts[i]]->ref_count++;
+            num_total_cut_pts[i]++;
+          }
+          
+//          cerr << " K_PATCH :: Bezier_output: l = " << l << ", num_total_cut_pts[" << i << "] = " << num_total_cut_pts[i] << endl << flush;
+          
+          for (m = 0; m < num_cut_pts; m++)
+            if (!--cut_pts[m]->ref_count)
+              delete cut_pts[m];
+          
+          if (num_cut_pts > 0)
+            delete [] cut_pts;
+        }
+        
+//        cerr << " K_PATCH :: Bezier_output: j = " << j << ", num_total_cut_pts[" << i << "] = " << num_total_cut_pts[i] << ", num_total_cut_pts_proto[" << i << "] = " << num_total_cut_pts_proto[i] << endl << flush;
+      }
+//      else  //  if (dist(endpts[k], endpts[k + 1]) < max_len_segment)
+//      {
+//        cerr << " K_PATCH :: Bezier_output: pwl_curves[" << i << "]->segments[" << j << "] is not long. " << endl << flush;
+//        cerr << " K_PATCH :: Bezier_output: j = " << j << ", num_total_cut_pts[" << i << "] = " << num_total_cut_pts[i] << ", num_total_cut_pts_proto[" << i << "] = " << num_total_cut_pts_proto[i] << endl << flush;
+//      }
+      
+      k++;
     }
-  else  //  if (!is_fw)
-    for (i = num_segments; i > 0; i--)
+    
+//    cerr << " K_PATCH :: Bezier_output: k = " << k << ", num_endpts_proto = " << num_endpts_proto << endl << flush;
+//    cerr << " K_PATCH :: Bezier_output: i = " << i << ", num_total_cut_pts[" << i << "] = " << num_total_cut_pts[i] << ", num_total_cutpts_proto[" << i << "] = " << num_total_cut_pts_proto[i] << endl << flush;
+    assert(num_total_cut_pts[i] <= num_total_cut_pts_proto[i]);
+  }
+  
+  for (i = 0; i < num_trim_curves; i++)
+    for (j = 0; j < num_total_cut_pts[i]; j++)
+      pwl_curves[i]->add_pt(total_cut_pts[i][j]);
+  
+  for (i = 0; i < num_trim_curves; i++)
+  {
+    for (j = 0; j < num_total_cut_pts[i]; j++)
+      if (!--total_cut_pts[i][j]->ref_count)
+        delete total_cut_pts[i][j];
+    
+    if (num_total_cut_pts_proto[i] > 0)
+      delete [] total_cut_pts[i];
+  }
+  
+  delete [] num_total_cut_pts_proto;
+  delete [] total_cut_pts;
+  delete [] num_total_cut_pts;
+  
+  for (i = 0; i < num_endpts_proto + 1; i++)
+    delete [] endpts[i];
+  
+  delete [] endpts;
+  
+  for (i = 0, num_endpts = 1; i < num_trim_curves; i++)
+    num_endpts += pwl_curves[i]->num_segments;
+  
+//  cerr << " K_PATCH :: Bezier_output: num_endpts = " << num_endpts << endl << flush;
+  
+  endpts = new double* [num_endpts];
+  
+  for (i = 0; i < num_endpts; i++)
+    endpts[i] = new double [2];
+  
+  pwl_curves[num_trim_curves - 1]->end()->get_fp_approx(endpts[0]);
+  
+  for (i = 0, k = 1; i < num_trim_curves; i++)
+    for (j = 0; j < pwl_curves[i]->num_segments; j++)
     {
-      out_fs << "-1 -1 1 1" << endl << flush;
-      out_fs << a[i][0] << " " << a[i][1] << endl << flush;
-      out_fs << a[i - 1][0] << " " << a[i - 1][1] << endl << flush;
+      pwl_curves[i]->segments[j]->end->get_fp_approx(endpts[k]);
+      k++;
     }
   
-  for (i = 0; i < MAX_NUM_SEGMENTS; i++)
-    delete [] a[i];
+//  for (i = 0; i < num_endpts; i++)
+//    cerr << " K_PATCH :: Bezier_output: endpts[" << i << "] = ( " << endpts[i][0] << ",  " << endpts[i][1] << " )" << endl << flush;
+//  cerr << endl << flush;
+  
+  assert(k == num_endpts);
+  
+  for (i = 0; i < num_endpts; i++)
+    for (j = 0; j < 2; j++)
+      endpts[i][j] = (endpts[i][j] - low_pt[j]) / (high_pt[j] - low_pt[j]);
+  
+//  for (i = 0; i < num_endpts; i++)
+//    cerr << " K_PATCH :: Bezier_output: endpts[" << i << "] = ( " << endpts[i][0] << ",  " << endpts[i][1] << " )" << endl << flush;
+//  cerr << endl << flush;
+  
+  //  dump endpts.
+  
+  max_len_bump  = 1e-5;
+  trim_ctrl_pts = new double* [num_endpts];
+  
+  for (i = 0; i < num_endpts; i++)
+    trim_ctrl_pts[i] = new double [2];
+  
+  for (l = 0; l < 2; l++)
+    trim_ctrl_pts[0][l] = endpts[0][l];
+  
+  i                 = 0;
+  num_trim_ctrl_pts = 1;
+  
+  while (i < num_endpts - 1)
+  {
+    j = k = i + 1;
+    
+//    while (j < num_endpts - 1 && endpts[i][0] == endpts[j][0])
+    while (j < num_endpts - 1 && fabs(endpts[i][0] - endpts[j][0]) < max_len_bump)
+      j++;
+    
+//    while (k < num_endpts - 1 && endpts[i][1] == endpts[k][1])
+    while (k < num_endpts - 1 && fabs(endpts[i][1] - endpts[k][1]) < max_len_bump)
+      k++;
+    
+    if (j < num_endpts - 1 && j < k)
+    {
+      for (l = 0; l < 2; l++)
+        trim_ctrl_pts[num_trim_ctrl_pts][l] = endpts[j][l];
+      
+//      cerr << " K_PATCH :: Bezier_output: trim_ctrl_pts[" << num_trim_ctrl_pts << "] = endpts[" << j << "] " << endl << flush;
+      
+      i = j;
+      num_trim_ctrl_pts++;
+    }
+    else if (k < num_endpts - 1 && j >= k)
+    {
+      for (l = 0; l < 2; l++)
+        trim_ctrl_pts[num_trim_ctrl_pts][l] = endpts[k][l];
+      
+//      cerr << " K_PATCH :: Bezier_output: trim_ctrl_pts[" << num_trim_ctrl_pts << "] = endpts[" << k << "] " << endl << flush;
+      
+      i = k;
+      num_trim_ctrl_pts++;
+    }
+    else  //  if (j == num_endpts - 1 || k == num_endpts - 1)
+      i = num_endpts - 1;
+  }
+  
+  cerr << " K_PATCH :: Bezier_output: num_trim_ctrl_pts = " << num_trim_ctrl_pts << endl << flush;
+  
+  assert(num_trim_ctrl_pts > 2);
+  assert(num_trim_ctrl_pts < num_endpts);
+  
+  if (fabs(trim_ctrl_pts[num_trim_ctrl_pts - 1][0] - trim_ctrl_pts[0][0]) < max_len_bump
+      ||
+      fabs(trim_ctrl_pts[num_trim_ctrl_pts - 1][1] - trim_ctrl_pts[0][1]) < max_len_bump) 
+    for (l = 0; l < 2; l++)
+      trim_ctrl_pts[num_trim_ctrl_pts - 1][l] = trim_ctrl_pts[0][l];
+  else
+  {
+    for (l = 0; l < 2; l++)
+      trim_ctrl_pts[num_trim_ctrl_pts][l] = trim_ctrl_pts[0][l];
+    
+    num_trim_ctrl_pts++;
+  }
+  
+  // dump surf.
+  
+  if (is_head)
+  {
+    //  dump the head of *this.
+    
+    if (is_ccw)
+      surf->Bezier_output(out_fs, low_s, high_s, low_t, high_t);
+    else  //  if (!is_ccw)
+      surf->Bezier_output(out_fs, high_s, low_s, low_t, high_t);
+  }
+  else  //  if (!is_head)
+  {
+    //  dump the tail of *this.
+    
+    if (is_ccw)
+      surf->Bezier_output(out_fs, high_s, low_s, low_t, high_t);
+    else  //  if (!is_ccw)
+      surf->Bezier_output(out_fs, low_s, high_s, low_t, high_t);
+  }
+  
+  out_fs << r << "  " << g << "  " << b << endl << flush;  //  color: rgb
+  
+  //  dump trim segments
+  
+//  out_fs << "1" << endl << flush;             //  num_trim_loops: 1
+//  out_fs << "1" << endl << flush;             //  num_trim_loops: 1
+//  out_fs << "-1  -1  1  1" << endl << flush;
+//  out_fs << num_trim_ctrl_pts << endl << flush;
+//  
+//  out_fs << setprecision(7) << setiosflags(ios::fixed);
+//  
+//  if (is_head)
+//    for (i = 0; i < num_trim_ctrl_pts; i++)
+//      out_fs << trim_ctrl_pts[i][0] << "  " << trim_ctrl_pts[i][1] << endl << flush;
+//  else  //  if (!is_head)
+//    for (i = num_trim_ctrl_pts; i > 0; i--)
+//      out_fs << trim_ctrl_pts[i - 1][0] << "  " << trim_ctrl_pts[i - 1][1] << endl << flush;
+//  
+//  out_fs << setprecision(6) << resetiosflags(ios::fixed);
+  
+  out_fs << "1" << endl << flush;             //  num_trim_loops: 1
+  out_fs << num_trim_ctrl_pts - 1 << endl << flush;
+  
+  out_fs << setprecision(7) << setiosflags(ios::fixed);
+  
+  if (is_head)
+    for (i = 0; i < num_trim_ctrl_pts - 1; i++)
+    {
+      out_fs << "-1  -1  1  1" << endl << flush;
+      out_fs << trim_ctrl_pts[i][0] << "  " << trim_ctrl_pts[i][1] << endl << flush;
+      out_fs << trim_ctrl_pts[i + 1][0] << "  " << trim_ctrl_pts[i + 1][1] << endl << flush;
+    }
+  else
+    for (i = num_trim_ctrl_pts - 1; i > 0; i--)
+    {
+      out_fs << "-1  -1  1  1" << endl << flush;
+      out_fs << trim_ctrl_pts[i][0] << "  " << trim_ctrl_pts[i][1] << endl << flush;
+      out_fs << trim_ctrl_pts[i - 1][0] << "  " << trim_ctrl_pts[i - 1][1] << endl << flush;
+    }
+  
+  out_fs << setprecision(6) << resetiosflags(ios::fixed);
+  
+  for (i = 0; i < num_endpts; i++)
+  {
+    delete [] endpts[i];
+    delete [] trim_ctrl_pts[i];
+  }
+  
+  delete [] endpts;
+  delete [] trim_ctrl_pts;
+  
+  for (i = 0; i < num_trim_curves; i++)
+    if (!--pwl_curves[i]->ref_count)
+      delete pwl_curves[i];
+  
+  delete [] pwl_curves;
   
   return 0;
 }
-#endif
 

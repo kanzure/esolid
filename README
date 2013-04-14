@@ -1,7 +1,7 @@
 //  file:    README
-//  update:  04/15/04
+//  update:  04/16/06
 
-ESOLID Version 0.1
+ESOLID Version 0.3
 
 URL:    http://research.cs.tamu.edu/keyser/geom/esolid
 
@@ -20,16 +20,15 @@ desolid/         Sample input files
 
 2-1) Platforms
 
-ESOLID Version xxx has been tested on
+ESOLID Version 0.3 has been tested on
 
-  Debian GNU/Linux 3.0 (woody)   and  g++ 2.95.4 or g++ 3.3.3
-  Fedora Linux     1.0 (yarrow)  and  g++ 3.3.2
+  Linux Fedora Core 5 and  g++ 4.1.0
 
 on Intel x86 CPU's.
 
 2-2) Prerequisite Libraries
 
-To build and run ESOLID Version xxx, the GNU MP (gmp) and LAPACK
+To build and run ESOLID Version 0.3, the GNU MP (gmp) and LAPACK
 (clapack) are required.
 
 2-2-1) The GNU MP (gmp)
@@ -39,13 +38,10 @@ machine. For more information, visit the GNU MP homepage:
 
      http://www.swox.com/gmp/
 
-The compiled binaries for Debian are are available at
+The compiled binaries for Fedora Core 5 on Intel x86 CPU's is available at
 
-     http://packages.debian.org/stable/libs/libgmp3.html
-
-and, for Red Hat at
-
-     http://demo.interchange.redhat.com/swr/i386/gmp-devel-4.1.2-2.i386.html
+     http://download.fedora.redhat.com/pub/fedora/linux/core/5/i386/os/Fedora/RPMS/gmp-4.1.4-6.2.1.i386.rpm
+     http://download.fedora.redhat.com/pub/fedora/linux/core/5/i386/os/Fedora/RPMS/gmp-devel-4.1.4-6.2.1.i386.rpm
 
 We assume the header file
 
@@ -68,7 +64,7 @@ correct it.
 
 2-2-2) LAPACK (CLAPACK)
 
-To build and run ESOLID Version 0.1, CLAPCK must be pre-installed
+To build and run ESOLID Version 0.3, CLAPCK must be pre-installed
 on your machine.
 
 LAPCK is originally written in FORTRAN. CLAPACK is a version of
@@ -98,9 +94,9 @@ those is different, edit Makefile and correct it.
 
 2-3) Installation
 
-2-3-1) De-archive ESOLID.tar.gz by
+2-3-1) De-archive ESOLID-0.3.tar.gz by
 
-            gzip -cd ESOLID.tar.gz | tar -xf -
+            gzip -cd ESOLID-0.3.tar.gz | tar -xf -
 
        and you will have the directory ESOLID. Move there by
 

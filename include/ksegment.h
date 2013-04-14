@@ -12,8 +12,12 @@
 #include <kratpoly.h>
 #include <kpoint2d.h>
 #include <kboxco2.h>
+#include <kpatch.h>
 
 using namespace std;
+
+class K_POINT2D;
+class K_BOXCO2;
 
 class K_SEGMENT
 {
@@ -22,8 +26,6 @@ friend class K_PATCH;
   
   K_POINT2D* start;
   K_POINT2D* end;
-  
-  int monotone;
   
   unsigned long ref_count;
   
@@ -40,27 +42,15 @@ friend class K_PATCH;
   
   K_SEGMENT();
   
-//  //  K_SEGMENT(const K_POINT2D& x, const K_POINT2D& y)
-//  //    constructs a segment (x, y].
-//  
-//  K_SEGMENT(const K_POINT2D&, const K_POINT2D&);
+  //  K_SEGMENT(const K_POINT2D& x, const K_POINT2D& y)
+  //    constructs a segment (x, y].
   
-  //  K_SEGMENT(const K_POINT2D& x, const K_POINT2D& y, const int m)
-  //    constructs a segment (x, y] of monotonicity m.
+  K_SEGMENT(const K_POINT2D&, const K_POINT2D&);
   
-//  K_SEGMENT(const K_POINT2D&, const K_POINT2D&, const int);
-  K_SEGMENT(const K_POINT2D&, const K_POINT2D&, const int = 0);
+  //  K_SEGMENT(K_POINT2D* const x, K_POINT2D* const y)
+  //    constructs a segment (x, y].
   
-//  //  K_SEGMENT(K_POINT2D* const x, K_POINT2D* const y)
-//  //    constructs a segment (*x, *y].
-//  
-//  K_SEGMENT(K_POINT2D* const, K_POINT2D* const);
-  
-  //  K_SEGMENT(K_POINT2D* const x, K_POINT2D* const y, const int m)
-  //    constructs a segment (x, y] of monotonicity m.
-  
-//  K_SEGMENT(K_POINT2D* const, K_POINT2D* const, const int);
-  K_SEGMENT(K_POINT2D* const, K_POINT2D* const, const int = 0);
+  K_SEGMENT(K_POINT2D* const, K_POINT2D* const);
   
   K_SEGMENT(const K_SEGMENT&);
   K_SEGMENT& operator =(const K_SEGMENT&);
@@ -124,7 +114,7 @@ friend class K_PATCH;
   
   friend int get_cyl_cap(const bigrational_vector&,
                          const bigrational_vector&, const bigrational_vector&,
-                         const int,
+                         const bool,
                          K_PATCH*&);
   
   friend int get_cyl_side(K_RATPOLY* const,

@@ -7,7 +7,6 @@
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
-#include <fstream>
 
 #include <kpatch.h>
 #include <kpartition.h>
@@ -41,9 +40,6 @@ public:
   
   friend ostream& operator <<(ostream&, const K_SOLID&);
   
-  friend K_SOLID read_solid(istream&, const bigrational& = 0);
-  friend K_SOLID read_CSG(const char*, const char*, const bigrational& = 0);
-  
   K_SOLID transform(const bigrational_matrix&) const;
   int     Bezier_output(ostream&) const;
   
@@ -75,6 +71,9 @@ public:
   friend K_SOLID gen_new_solid(K_PARTITION**, const unsigned long,
                                K_PARTITION**, const unsigned long);
 };
+
+K_SOLID read_solid(istream&, const bigrational& = 0);
+K_SOLID read_CSG(const char*, const char*, const bigrational& = 0);
 
 bigrational_matrix read_BRLCAD_matrix(istream&);
 

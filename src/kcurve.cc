@@ -575,9 +575,9 @@ int K_CURVE :: add_pt(K_POINT2D* const x, const int added_at_start)
         s[j]->ref_count++;
       }
       
-      s[i]     = new K_SEGMENT(segments[i]->start, x, 1);
+      s[i]     = new K_SEGMENT(segments[i]->start, x);
       s[i]->ref_count++;
-      s[i + 1] = new K_SEGMENT(x, segments[i]->end, 1);
+      s[i + 1] = new K_SEGMENT(x, segments[i]->end);
       s[i + 1]->ref_count++;
       
       for (j = i + 1; j < num_segments; j++)
@@ -2041,9 +2041,9 @@ unsigned long gen_curve_topo_proto(const K_RATPOLY& P,
       
       assert(i == 2);
       
-      s[0] = new K_SEGMENT(edge[0], turn, 1);
+      s[0] = new K_SEGMENT(edge[0], turn);
       s[0]->ref_count++;
-      s[1] = new K_SEGMENT(turn, edge[1], 1);
+      s[1] = new K_SEGMENT(turn, edge[1]);
       s[1]->ref_count++;
       
       curves    = new K_CURVE* [num_curves = 1];
@@ -2897,7 +2897,7 @@ unsigned long gen_curve_topo_proto(const K_RATPOLY& P,
       K_SEGMENT* s[1];
       
       curves    = new K_CURVE* [num_curves = 1];
-      s[0]      = new K_SEGMENT(edge_l_s[0], edge_h_s[0], 1);
+      s[0]      = new K_SEGMENT(edge_l_s[0], edge_h_s[0]);
       s[0]->ref_count++;
       curves[0] = new K_CURVE(P, s, 1);
       curves[0]->ref_count++;
@@ -2908,7 +2908,7 @@ unsigned long gen_curve_topo_proto(const K_RATPOLY& P,
       K_SEGMENT* s[1];
       
       curves    = new K_CURVE* [num_curves = 1];
-      s[0]      = new K_SEGMENT(edge_l_t[0], edge_l_s[0], 1);
+      s[0]      = new K_SEGMENT(edge_l_t[0], edge_l_s[0]);
       s[0]->ref_count++;
       curves[0] = new K_CURVE(P, s, 1);
       curves[0]->ref_count++;
@@ -2919,7 +2919,7 @@ unsigned long gen_curve_topo_proto(const K_RATPOLY& P,
       K_SEGMENT* s[1];
       
       curves    = new K_CURVE* [num_curves = 1];
-      s[0]      = new K_SEGMENT(edge_l_s[0], edge_h_t[0], 1);
+      s[0]      = new K_SEGMENT(edge_l_s[0], edge_h_t[0]);
       s[0]->ref_count++;
       curves[0] = new K_CURVE(P, s, 1);
       curves[0]->ref_count++;
@@ -2930,7 +2930,7 @@ unsigned long gen_curve_topo_proto(const K_RATPOLY& P,
       K_SEGMENT* s[1];
       
       curves    = new K_CURVE* [num_curves = 1];
-      s[0]      = new K_SEGMENT(edge_l_t[0], edge_h_s[0], 1);
+      s[0]      = new K_SEGMENT(edge_l_t[0], edge_h_s[0]);
       s[0]->ref_count++;
       curves[0] = new K_CURVE(P, s, 1);
       curves[0]->ref_count++;
@@ -2941,7 +2941,7 @@ unsigned long gen_curve_topo_proto(const K_RATPOLY& P,
       K_SEGMENT* s[1];
       
       curves    = new K_CURVE* [num_curves = 1];
-      s[0]      = new K_SEGMENT(edge_h_s[0], edge_h_t[0], 1);
+      s[0]      = new K_SEGMENT(edge_h_s[0], edge_h_t[0]);
       s[0]->ref_count++;
       curves[0] = new K_CURVE(P, s, 1);
       curves[0]->ref_count++;
@@ -2952,7 +2952,7 @@ unsigned long gen_curve_topo_proto(const K_RATPOLY& P,
       K_SEGMENT* s[1];
       
       curves    = new K_CURVE* [num_curves = 1];
-      s[0]      = new K_SEGMENT(edge_l_t[0], edge_h_t[0], 1);
+      s[0]      = new K_SEGMENT(edge_l_t[0], edge_h_t[0]);
       s[0]->ref_count++;
       curves[0] = new K_CURVE(P, s, 1);
       curves[0]->ref_count++;
@@ -4373,41 +4373,52 @@ int K_CURVE :: mk_seg_bw(int* const marks, const int good_bad,
   return 0;
 }
 
-int K_CURVE :: sub_divide(const unsigned long num_cut_lines,
-                          const unsigned long dir)
+int K_CURVE :: subdivide(const unsigned long num_cut)
 {
-  assert(num_cut_lines > 0);
-  assert(!dir || dir == 1);
+  assert(num_cut > 0);
   
-  unsigned long i, j;
-  K_BOXCO2      b;
-  bigrational   v_start, v_step;
-  K_POINT2D**   cut_pts;
-  unsigned long num_cut_pts;
-  
-  b       = bbox();
-  v_start = b.low[dir];
-  
-  if ((v_step  = (b.high[dir] - b.low[dir]) / (num_cut_lines + 1)) > 0)
+  if (num_cut > 1)
   {
-    v_start += v_step;
+    unsigned long i, j;
+    K_BOXCO2      b;
+    bigrational   b_width[2];
+    unsigned long cut_dir;
+    bigrational   val_step, val_cut;
+    K_POINT2D**   cut_pts;
+    unsigned long num_cut_pts;
     
-    for (i = 0; i < num_cut_lines; i++)
+    b = bbox();
+    
+    for (i = 0; i < 2; i++)
+      b_width[i] = b.high[i] - b.low[i];
+    
+    if (b_width[0] < b_width[1])
+      cut_dir = 1;
+    else  //  if (b_width[0] >= b_width[1])
+      cut_dir = 0;
+    
+    if ((val_step  = b_width[cut_dir] / (num_cut + 1)) > 0)
     {
-      if ((num_cut_pts =
-           find_intersections(K_RATPOLY(2, dir, v_start), cut_pts, 1)) > 0)
-      {
-        for (j = 0; j < num_cut_pts; j++)
-          add_pt(cut_pts[j]);
-        
-        for (j = 0; j < num_cut_pts; j++)
-          if (!--cut_pts[j]->ref_count)
-            delete cut_pts[j];
-        
-        delete [] cut_pts;
-      }
+      val_cut = b.low[cut_dir] + val_step;
       
-      v_start += v_step;
+      for (i = 0; i < num_cut; i++)
+      {
+        if ((num_cut_pts = find_intersections(K_RATPOLY(2, cut_dir, val_cut),
+                                              cut_pts,
+                                              1)) > 0)
+        {
+          for (j = 0; j < num_cut_pts; j++)
+            add_pt(cut_pts[j]);
+          
+          for (j = 0; j < num_cut_pts; j++)
+            if (!--cut_pts[j]->ref_count)
+              delete cut_pts[j];
+          
+          delete [] cut_pts;
+        }
+        
+        val_cut += val_step;
+      }
     }
   }
   

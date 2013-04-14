@@ -3,6 +3,7 @@
 
 #define DEG 64
 
+#include <cassert>
 #include <cstdlib>
 //#include <fstream>
 #include <iostream>

@@ -28,7 +28,7 @@ CC = g++
 CFLAGS += -g
 CFLAGS += -O
 #CFLAGS += -O2
-CFLAGS += -Wno-deprecated
+#CFLAGS += -Wno-deprecated
 
 #####  Pick your archiver and stripper.
 
@@ -144,26 +144,20 @@ mapc_poly:	$(ESOLID_dir)/main/mapc_poly_main.o libmapc
 mapc_sturm:	$(ESOLID_dir)/main/mapc_sturm_main.o libmapc
 	$(CC) -o $(ESOLID_dir)/$@ $(ESOLID_dir)/main/mapc_sturm_main.o -L$(ESOLID_dir) -lmapc $(CFLAGS) $(LFLAGS)
 
-mapc_rt1:	$(ESOLID_dir)/main/mapc_rt1_main.o libmapc
-	$(CC) -o $(ESOLID_dir)/$@ $(ESOLID_dir)/main/mapc_rt1_main.o -L$(ESOLID_dir) -lmapc  $(CFLAGS) $(LFLAGS)
+#mapc_rt1:	$(ESOLID_dir)/main/mapc_rt1_main.o libmapc
+#	$(CC) -o $(ESOLID_dir)/$@ $(ESOLID_dir)/main/mapc_rt1_main.o -L$(ESOLID_dir) -lmapc  $(CFLAGS) $(LFLAGS)
 
 mapc_pt1:	$(ESOLID_dir)/main/mapc_pt1_main.o libmapc
 	$(CC) -o $(ESOLID_dir)/$@ $(ESOLID_dir)/main/mapc_pt1_main.o -L$(ESOLID_dir) -lmapc  $(CFLAGS) $(LFLAGS)
 
-mapc_pt2:	$(ESOLID_dir)/main/mapc_pt2_main.o libmapc
-	$(CC) -o $(ESOLID_dir)/$@ $(ESOLID_dir)/main/mapc_pt2_main.o -L$(ESOLID_dir) -lmapc  $(CFLAGS) $(LFLAGS)
+#mapc_pt2:	$(ESOLID_dir)/main/mapc_pt2_main.o libmapc
+#	$(CC) -o $(ESOLID_dir)/$@ $(ESOLID_dir)/main/mapc_pt2_main.o -L$(ESOLID_dir) -lmapc  $(CFLAGS) $(LFLAGS)
 
 mapc:		$(ESOLID_dir)/main/mapc_main.o libmapc
 	$(CC) -o $(ESOLID_dir)/$@ $(ESOLID_dir)/main/mapc_main.o -L$(ESOLID_dir) -lmapc  $(CFLAGS) $(LFLAGS)
 
-x_esolid:	$(ESOLID_dir)/main/esolid_main.o $(config_objects) $(bignum_objects) $(fp_objects) $(mapc_objects) $(esolid_objects)
-	$(CC) -o $(ESOLID_dir)/$@ $< $(config_objects) $(bignum_objects) $(fp_objects) $(mapc_objects) $(esolid_objects) $(CFLAGS) $(LFLAGS)
-
 esolid:		$(ESOLID_dir)/main/esolid_main.o libesolid
 	$(CC) -o $(ESOLID_dir)/$@ $(ESOLID_dir)/main/esolid_main.o -L$(ESOLID_dir) -l$@  $(CFLAGS) $(LFLAGS)
-
-rotatebox:		$(ESOLID_dir)/main/rotatebox.cc $(bignum_objects)
-	$(CC) -o $(ESOLID_dir)/pdesolid/$@ $< $(bignum_objects) $(CFLAGS) $(LFLAGS)
 
 ###  5. Cleaning
 
@@ -172,5 +166,4 @@ clean:
 	rm -f $(ESOLID_dir)/libmapc.a $(ESOLID_dir)/libmapc.so $(ESOLID_dir)/libesolid.a $(ESOLID_dir)/libesolid.so
 	rm -f $(ESOLID_dir)/main/*.o
 	rm -f $(ESOLID_dir)/mapc* $(ESOLID_dir)/esolid
-	rm -f $(ESOLID_dir)/x_esolid
 

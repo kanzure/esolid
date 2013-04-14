@@ -13,6 +13,7 @@
 using namespace std;
 
 class K_POINT2D;
+class K_CURVE;
 
 class K_BOXCO2
 {

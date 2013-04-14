@@ -1,6 +1,7 @@
 //  file:  esolid_main.cc
 //  update:  09/25/02
 
+#include <cassert>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -38,6 +39,8 @@ int main(int argc, char* argv[])
   K_SOLID     s1, s2, s3;
   
   static const bigrational perturb_factor_proto = 0;
+//  static const bigrational perturb_factor_proto = bigrational(1, 512);
+//  static const bigrational perturb_factor_proto = bigrational(1, 1024);
   
   op = argv[1][1];
   assert(op == 'D' || op == 'I' || op == 'U' || op == 'O' || op == 'M');
@@ -99,6 +102,10 @@ int main(int argc, char* argv[])
     perturb_factor = perturb_factor_proto;
     
     s3 = read_CSG(argv[2], argv[3], perturb_factor);
+    
+    out_file.open(argv[3]);
+    s3.Bezier_output(out_file);
+    out_file.close();
   }
   
   CLOCK_STOP(&lap);

@@ -17,11 +17,13 @@ using namespace std;
 
 class K_GRAPH;
 class K_SOLID;
+class K_SEGMENT;
 
 class K_CURVE
 {
 friend class K_PATCH;
 friend class K_PARTITION;
+friend class K_SOLID;
   
   K_RATPOLY*    poly;
   
@@ -41,6 +43,8 @@ friend class K_PARTITION;
   
   int assoc(K_CURVE* const, const int);
   int reverse();
+  
+  int subdivide(const unsigned long);
   
 public:
   
@@ -98,8 +102,6 @@ public:
   friend int pt_in_on_out_trim_curves(K_POINT2D&,
                                       K_CURVE** const, const unsigned long);
   
-  int sub_divide(const unsigned long, const unsigned long);
-  
   //  gen_curve_topo()
   
   friend unsigned long gen_curve_topo(const K_RATPOLY&,
@@ -134,7 +136,7 @@ public:
   
   friend int get_cyl_cap(const bigrational_vector&,
                          const bigrational_vector&, const bigrational_vector&,
-                         const int,
+                         const bool,
                          K_PATCH*&);
   
   friend int get_cyl_side(K_RATPOLY* const,
@@ -170,8 +172,11 @@ public:
                                      K_GRAPH*&,
                                      long*&, K_GRAPH*&);
   
+//  friend K_SOLID gen_new_solid(K_PARTITION**, const unsigned long,
+//                               K_PARTITION**, const unsigned long);
   friend K_SOLID gen_new_solid(K_PARTITION**, const unsigned long,
-                               K_PARTITION**, const unsigned long);
+                               K_PARTITION**, const unsigned long,
+                               const char);
 };
 
 #endif

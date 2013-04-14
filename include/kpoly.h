@@ -43,7 +43,7 @@ protected:
   //  For an index, i, return the powers, p, of the term
   //  to which the i-th coefficient belongs to.
   
-  unsigned long index_to_total_deg(const unsigned long i) const;
+  unsigned long index_to_deg(const unsigned long i) const;
   //  Return the total degree of the i-th term.
   
   unsigned long powers_to_index(const long* const p) const;

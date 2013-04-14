@@ -16,6 +16,10 @@
 
 using namespace std;
 
+class K_POINT1D;
+class K_POINT2D;
+class K_CURVE;
+
 class K_RATPOLY
 {
 //  A class for representing polynomials with bigrational coefficients
@@ -51,12 +55,11 @@ friend class K_SOLID;
   
   long* index_to_powers(const unsigned long) const;
   
-  //  unsigned long index_to_total_deg(const unsigned long i) const
+  //  unsigned long index_to_deg(const unsigned long i) const
   //    returns t s.t.
-  //      coeffs[i] is the coefficient of the monomial of *this
-  //                                        of total degree t.
+  //      coeffs[i] is the coefficient of the monomial of *this of degree t.
   
-  unsigned long index_to_total_deg(const unsigned long) const;
+  unsigned long index_to_deg(const unsigned long) const;
   
   //  unsigned long powers_to_index(const long* const p) const
   //    returns i s.t.
@@ -141,11 +144,11 @@ friend class K_SOLID;
   
   K_RATPOLY div(const K_RATPOLY&, K_RATPOLY&) const;
   
-  //  K_RATPOLY* set_Sturm_seq()
-  //    PROVIDED *this is a univariate polynomial,
-  //    generates Sturm sequence of *this.
-  
-  K_RATPOLY*  set_Sturm_seq();
+//  //  K_RATPOLY* set_Sturm_seq()
+//  //    PROVIDED *this is a univariate polynomial,
+//  //    generates Sturm sequence of *this.
+//  
+//  K_RATPOLY* set_Sturm_seq();
   
   //  K_RATPOLY gcd1(const K_RATPOLY& P) const
   //    PROVIDED *this and P are univariate polynomials,
@@ -425,6 +428,12 @@ public:
   friend K_RATPOLY operator /(const K_RATPOLY&, const K_RATPOLY&);
   friend K_RATPOLY rem(const K_RATPOLY&, const K_RATPOLY&);
   
+  //  K_RATPOLY* set_Sturm_seq()
+  //    PROVIDED *this is a univariate polynomial,
+  //    generates Sturm sequence of *this.
+  
+  K_RATPOLY* set_Sturm_seq();
+  
   //  long num_Sturm_seq_perm(const bigrational& b) const
   //    PROVIDED *this is a univariate polynomial,
   //    returns
@@ -544,8 +553,10 @@ public:
   
   K_RATPOLY transform_Impl(const bigrational_matrix&) const;
   
-  friend K_RATPOLY read_poly(istream&);
+//  friend K_RATPOLY read_poly(istream&);
 };
+
+K_RATPOLY read_poly(istream&);
 
 #endif
 

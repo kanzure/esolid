@@ -18,6 +18,8 @@ using namespace std;
 
 class K_BOXCO2;
 class K_PARTITION;
+class K_SURF;
+class K_PATCH;
 
 class K_POINT2D
 {
@@ -338,17 +340,17 @@ public:
   
   int equal(K_POINT2D&);
   
-  //  K_POINT2D :: equal_s(K_POINT2D& x)
+  //  int equal_s(K_POINT2D& x)
   //    returns 1 if *this and x are equal in the s-coordinate, and
   //            0 otherwise.
   
-  int K_POINT2D :: equal_s(K_POINT2D& x);
+  int equal_s(K_POINT2D& x);
   
-  //  K_POINT2D :: equal_t(K_POINT2D& x)
+  //  int equal_t(K_POINT2D& x)
   //    returns 1 if *this and x are equal in the t-coordinate, and
   //            0 otherwise.
   
-  int K_POINT2D :: equal_t(K_POINT2D& x);
+  int equal_t(K_POINT2D& x);
   
 //  //  int equal_dir(K_POINT2D& x, const unsigned long i)
 //  //    returns 1 if *this and x are equal in the i-th coordinate, and
