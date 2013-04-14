@@ -77,14 +77,14 @@ LAPACK written in C. For more information, visit CLAPACK homepage:
 
 2-2-2-2) Please, download the source code of "clapack" from
 
-	      http://www.netlib.org/clapack/index.html
+            http://www.netlib.org/clapack/index.html
 
          and build it.
 
 We assume the archives
 
-	     libclapack.a
-	     libF77.a
+    libclapack.a
+    libF77.a
 
 are located at /usr/local/lib. If the name and/or location of any of
 those is different, edit Makefile and correct it.
